@@ -1,0 +1,17 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>gl test</title>
+<style>html,body{margin:0;height:100%;background:#111}canvas{display:block}</style></head>
+<body><script type="module">
+import * as THREE from 'three';
+const r = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
+const s = new THREE.Scene(); s.background = new THREE.Color(0x203040);
+const c = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 100); c.position.set(3,2,4); c.lookAt(0,0,0);
+s.add(new THREE.HemisphereLight(0xffffff, 0x334455, 2));
+const m = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), new THREE.MeshStandardMaterial({color:0xd04030}));
+s.add(m); const d = new THREE.DirectionalLight(0xffffff, 2); d.position.set(2,5,3); s.add(d);
+r.render(s,c);
+const gl = r.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info');
+document.title = 'READY ' + (ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'unknown');
+window.__ready = true;
+</script></body></html>

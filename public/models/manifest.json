@@ -1,0 +1,24 @@
+{
+  "props": [
+    {"type": "moving_head", "file": "moving_head.glb", "size": [0.45, 0.45, 0.65], "fit": "bounds", "inverted": true, "hanging": true, "idleOnly": true},
+    {"type": "follow_spot", "file": "follow_spot.glb", "size": [0.5, 1.6, 1.8], "fit": "bounds", "idleOnly": true, "rotY": 1.5707963267948966},
+    {"type": "stanchion", "file": "stanchion.glb", "size": [0.35, 0.35, 0.95], "fit": "bounds"},
+    {"type": "lounge_table_set", "file": "lounge_table_set.glb", "size": [1.8, 1.6, 0.75], "fit": "bounds"},
+    {"type": "bar_stool", "file": "bar_stool.glb", "size": [0.45, 0.45, 1], "fit": "bounds", "highOnly": true},
+    {"type": "bar_table", "file": "bar_table.glb", "size": [0.7, 0.7, 1.05], "fit": "bounds"},
+    {"type": "chandelier_lantern", "file": "chandelier_lantern.glb", "size": [1.6, 1.6, 1.4], "fit": "bounds", "hanging": true},
+    {"type": "chandelier_ring", "file": "chandelier_ring.glb", "size": [4, 4, 2], "fit": "bounds", "hanging": true},
+    {"type": "vip_barrel_chair", "file": "vip_barrel_chair.glb", "size": [0.75, 0.75, 0.8], "fit": "bounds"},
+    {"type": "vip_sofa", "file": "vip_sofa.glb", "size": [2.4, 1, 0.8], "fit": "bounds"},
+    {"type": "lamp_post", "file": "lamp_post_banner.glb", "size": [0.9, 0.6, 6.5], "fit": "bounds", "layer": "precinct"},
+    {"type": "street_light", "file": "street_light.glb", "size": [0.4, 1.5, 8.5], "fit": "bounds", "rotY": 1.5707963267948966},
+    {"type": "crowd_barrier", "file": "crowd_barrier.glb", "size": [2, 0.5, 1.1], "fit": "bounds", "rotY": 1.5707963267948966, "layer": "precinct"},
+    {"type": "kitchen_car", "file": "food_truck.glb", "size": [4.2, 1.9, 2.6], "fit": "bounds", "rotY": 3.141592653589793, "layer": "precinct"},
+    {"type": "balcony_seat", "file": "balcony_seat.glb", "size": [0.55, 0.65, 1], "fit": "bounds", "seat": "balcony", "rotY": 3.141592653589793, "highOnly": true},
+    {"type": "vip_seat", "file": "vip_seat.glb", "size": [0.55, 0.65, 1], "fit": "bounds", "seat": "vip", "rotY": 3.141592653589793, "highOnly": true},
+    {"type": "bench", "file": "plaza_bench.glb", "size": [1.8, 0.5, 0.45], "fit": "bounds", "rotY": -1.5707963267948966, "layer": "precinct"},
+    {"type": "planter", "file": "planter.glb", "size": [1.3, 1.3, 1.1], "fit": "bounds", "layer": "precinct"},
+    {"type": "totem", "file": "signage_totem.glb", "size": [0.7, 0.25, 2.1], "fit": "bounds", "rotY": 3.141592653589793, "layer": "precinct"},
+    {"type": "foyer_totem", "file": "signage_totem.glb", "size": [0.7, 0.25, 2.1], "fit": "bounds"}
+  ]
+}

@@ -1,0 +1,268 @@
+{
+ "_comment": "Texture sets generated with the local ComfyUI toolkit (Z-Image Turbo, then the CPU 'seamless' step that makes the image tileable and derives normal + roughness maps). Colours and patterns follow the palette tables in research/00-consolidated.md section 9, which were sampled from real photographs of K-Arena Yokohama. tile = real-world size in metres that one texture repeat covers. Run: node tools/gen/run-textures.mjs [set ...]",
+ "style": "seamless tileable material texture, flat orthographic straight-on view, perfectly uniform even diffuse lighting, no shadows, no highlights, no vignette, no perspective, no objects, no text, fills the whole frame edge to edge, photorealistic, high detail",
+ "defaults": {
+  "flatten": 1,
+  "flattenRadius": 0.07,
+  "crop": 1,
+  "normalStrength": 2,
+  "roughness": 0.5
+ },
+ "sets": [
+  {
+   "name": "concrete_fairfaced",
+   "tile": 3.6,
+   "seed": 201,
+   "prompt": "fair-faced architectural cast concrete wall, light warm grey, very smooth, faint formwork panel lines forming a regular grid of four large rectangles, small round tie-hole dimples at the panel corners"
+  },
+  {
+   "name": "concrete_stand",
+   "tile": 3,
+   "seed": 202,
+   "prompt": "bare cast concrete surface, cool mid grey, fine pores and subtle trowel marks, clean and even"
+  },
+  {
+   "name": "concrete_floor_sealed",
+   "tile": 4,
+   "seed": 203,
+   "prompt": "sealed polished concrete floor, warm mid grey, subtle cloudy mottling, a few faint hairline cracks and light scuff marks"
+  },
+  {
+   "name": "concrete_painted_cream",
+   "tile": 2,
+   "seed": 204,
+   "prompt": "smooth concrete wall painted cream off-white, faint roller paint texture, clean"
+  },
+  {
+   "name": "mortar_charcoal",
+   "tile": 3,
+   "seed": 205,
+   "prompt": "charcoal grey trowelled cement mortar plaster wall finish, soft cloudy hand-trowel swirl marks, matte"
+  },
+  {
+   "name": "metal_panel_white",
+   "tile": 2,
+   "seed": 206,
+   "prompt": "plain white painted aluminium cladding panel surface, satin finish, extremely subtle orange-peel coating grain, completely plain with no joints and no lines"
+  },
+  {
+   "name": "metal_ribbed_white",
+   "tile": 1.6,
+   "seed": 207,
+   "prompt": "white corrugated ribbed metal siding wall, fine regular horizontal ribs running left to right across the whole image, eight evenly spaced ribs, soft grey shadow line under each rib"
+  },
+  {
+   "name": "standing_seam_grey",
+   "tile": 2.4,
+   "seed": 308,
+   "prompt": "light grey standing seam metal roof seen straight from above, straight parallel raised seams running vertically from the very top edge to the very bottom edge of the image, six evenly spaced seams, plain flat metal sheets between them, no horizontal joints"
+  },
+  {
+   "name": "louvre_grey",
+   "tile": 1,
+   "seed": 209,
+   "prompt": "dark grey metal ventilation louvre wall, regular horizontal louvre blades running left to right, ten evenly spaced blades"
+  },
+  {
+   "name": "brick_redbrown",
+   "tile": 1.2,
+   "seed": 210,
+   "prompt": "red-brown brick tile wall in stretcher bond, regular courses, light beige mortar joints, slight colour variation between bricks"
+  },
+  {
+   "name": "precast_offwhite",
+   "tile": 2,
+   "seed": 211,
+   "prompt": "off-white precast concrete panel surface, fine sandblasted sandy grain, plain with no joints"
+  },
+  {
+   "name": "pavers_warmgrey",
+   "tile": 2.4,
+   "seed": 212,
+   "prompt": "warm grey rectangular concrete paving stones laid in a regular running bond pattern, tight straight joints, slight tone variation between pavers, seen from directly above"
+  },
+  {
+   "name": "pavers_terracotta",
+   "tile": 1.8,
+   "seed": 213,
+   "prompt": "reddish-brown clay paving bricks laid in a regular running bond pattern, tight joints, matte terracotta tones, seen from directly above"
+  },
+  {
+   "name": "granite_pale",
+   "tile": 1.5,
+   "seed": 214,
+   "prompt": "pale grey flamed granite stone surface, fine salt-and-pepper crystalline grain, plain with no joints"
+  },
+  {
+   "name": "asphalt",
+   "tile": 4,
+   "seed": 215,
+   "prompt": "dark grey asphalt road surface with fine aggregate, plain with no markings, seen from directly above"
+  },
+  {
+   "name": "grass",
+   "tile": 4,
+   "seed": 216,
+   "prompt": "short mown green park lawn grass, dense and even, seen from directly above"
+  },
+  {
+   "name": "ballast",
+   "tile": 2,
+   "seed": 217,
+   "prompt": "railway track ballast, crushed angular grey and brown stones, densely packed, seen from directly above"
+  },
+  {
+   "name": "steel_black_matte",
+   "tile": 2,
+   "seed": 218,
+   "prompt": "matte black painted structural steel surface, very subtle paint texture and faint dust, plain"
+  },
+  {
+   "name": "steel_grating",
+   "tile": 0.6,
+   "seed": 319,
+   "prompt": "top-down plan view of a black steel bar grating floor panel, perfectly regular square grid of small rectangular openings between straight parallel bars, completely flat, dark void below"
+  },
+  {
+   "name": "acoustic_ribbed_dark",
+   "tile": 1.2,
+   "seed": 220,
+   "prompt": "dark charcoal acoustic wall panel with fine regular vertical slats and narrow black grooves, sixteen evenly spaced slats"
+  },
+  {
+   "name": "fireproofing_black",
+   "tile": 2,
+   "seed": 221,
+   "prompt": "black sprayed fireproofing coating on a ceiling, rough bumpy fibrous texture, matte black"
+  },
+  {
+   "name": "curtain_velour_wine",
+   "tile": 1.2,
+   "seed": 322,
+   "prompt": "wine purple-red velvet theatre curtain with soft regular vertical pleats running straight from the top edge to the bottom edge of the image, identical evenly spaced folds, clean uniform fabric with no stains and no marks",
+   "flattenRadius": 0.12
+  },
+  {
+   "name": "stage_deck_grey",
+   "tile": 2.4,
+   "seed": 223,
+   "prompt": "dark grey painted plywood stage deck floor made of square panels with thin seams, light scuff marks and tape residue, seen from directly above"
+  },
+  {
+   "name": "seat_fabric_navy",
+   "tile": 0.4,
+   "seed": 224,
+   "prompt": "close-up of navy blue woven tweed upholstery fabric with small lighter blue flecks, tight regular weave"
+  },
+  {
+   "name": "seat_fabric_vermilion",
+   "tile": 0.4,
+   "seed": 225,
+   "prompt": "close-up of vermilion red woven upholstery fabric, tight regular weave, plain"
+  },
+  {
+   "name": "fabric_waffle_midnight",
+   "tile": 0.3,
+   "seed": 226,
+   "prompt": "close-up of midnight blue waffle weave upholstery fabric, small regular square waffle cells"
+  },
+  {
+   "name": "plastic_black_matte",
+   "tile": 0.5,
+   "seed": 227,
+   "prompt": "matte black moulded plastic surface with a very fine pebbled grain, plain"
+  },
+  {
+   "name": "wood_walnut_dark",
+   "tile": 1.2,
+   "seed": 228,
+   "prompt": "dark walnut stained wood veneer panel with fine straight vertical grain, satin finish, plain with no joints"
+  },
+  {
+   "name": "wood_macassar",
+   "tile": 1.2,
+   "seed": 229,
+   "prompt": "macassar ebony wood veneer with bold dark brown and black vertical stripes, glossy lacquer look, plain with no joints"
+  },
+  {
+   "name": "carpet_red_gold",
+   "tile": 2,
+   "seed": 230,
+   "prompt": "deep red Axminster carpet with a thin gold art deco pattern of starbursts and straight lines, regular repeating layout, seen from directly above"
+  },
+  {
+   "name": "carpet_navy_gold",
+   "tile": 2,
+   "seed": 231,
+   "prompt": "navy blue Axminster carpet with a thin gold art deco pattern of starbursts and straight lines, regular repeating layout, seen from directly above"
+  },
+  {
+   "name": "marble_black",
+   "tile": 2,
+   "seed": 232,
+   "prompt": "polished black marble slab with sparse thin white veins, plain with no joints"
+  },
+  {
+   "name": "mosaic_gold",
+   "tile": 0.6,
+   "seed": 233,
+   "prompt": "champagne gold glass mosaic tiles, regular grid of small square tiles with thin dark joints, slight shimmer variation between tiles"
+  },
+  {
+   "name": "brass_brushed",
+   "tile": 1,
+   "seed": 334,
+   "prompt": "brushed brass metal sheet with fine straight horizontal brushing lines, warm gold colour, perfectly uniform flat tone with no reflections and no gradients, plain",
+   "flattenRadius": 0.2
+  },
+  {
+   "name": "laminate_rust",
+   "tile": 1,
+   "seed": 335,
+   "prompt": "rust effect table top laminate, weathered oxidised steel look, brown and orange mottled patches spread evenly over the whole image with no bands and no streaks, plain",
+   "flattenRadius": 0.15
+  },
+  {
+   "name": "wallpaper_teal_floral",
+   "tile": 1.2,
+   "seed": 236,
+   "prompt": "teal wallpaper with a large beige arts-and-crafts style floral and leaf pattern, regular repeating layout, flat print"
+  },
+  {
+   "name": "facade_office_glass",
+   "tile": 7.2,
+   "seed": 237,
+   "prompt": "flat front elevation of a modern office tower curtain wall, regular grid of blue-grey reflective glass windows with thin silver mullions and grey spandrel bands, exactly two storeys high and four window bays wide"
+  },
+  {
+   "name": "facade_residential",
+   "tile": 6,
+   "seed": 238,
+   "prompt": "flat front elevation of a Japanese residential apartment tower, regular rows of balconies with glass balustrades and beige tile walls, sliding windows behind, exactly two storeys high and two apartments wide"
+  },
+  {
+   "name": "facade_commercial",
+   "tile": 6,
+   "seed": 239,
+   "prompt": "flat front elevation of a low commercial building wall, light grey metal panels with a horizontal band of dark windows, exactly two storeys high"
+  },
+  {
+   "name": "facade_parking",
+   "tile": 6,
+   "seed": 240,
+   "prompt": "flat front elevation of a multi-storey car park facade, horizontal concrete spandrel bands alternating with dark open decks behind metal mesh, exactly two storeys high"
+  },
+  {
+   "name": "roof_gravel",
+   "tile": 4,
+   "seed": 241,
+   "prompt": "flat building rooftop surface, light grey waterproofing membrane with fine gravel, seen from directly above, plain"
+  },
+  {
+   "name": "velour_wine",
+   "tile": 0.6,
+   "seed": 242,
+   "prompt": "close-up of plain wine purple-red velvet velour fabric, soft uniform short pile, completely flat with no folds and no pleats, plain"
+  }
+ ]
+}

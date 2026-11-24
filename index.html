@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d11" />
+    <meta name="color-scheme" content="dark" />
+    <title>Stage EX · K-Arena Yokohama 디지털 트윈</title>
+    <meta
+      name="description"
+      content="K-Arena Yokohama(Kアリーナ横浜)의 비공식 3D 디지털 트윈. 외관과 홀 내부, 20,033석 좌석별 시야, 단면·층별 보기, 1인칭 걷기를 브라우저에서 살펴볼 수 있습니다."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0d11'/%3E%3Cpath d='M5 21 16 9l11 12-4 3H9z' fill='none' stroke='%23f0b35a' stroke-width='2.4' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <style>
+      /* Critical styles for the loading screen; the rest is in src/styles/app.css. */
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0b0d11;
+        color: #e7e9ee;
+        overflow: hidden;
+        font-family: 'Pretendard Variable', Pretendard, 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      #loading {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: grid;
+        place-items: center;
+        background: #0b0d11;
+        transition: opacity 0.6s ease;
+      }
+      #loading.done {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #loading .box {
+        width: min(420px, 82vw);
+      }
+      #loading h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 650;
+        letter-spacing: 0.01em;
+      }
+      #loading .sub {
+        margin: 6px 0 26px;
+        font-size: 13px;
+        color: #98a0ad;
+      }
+      #loading .bar {
+        height: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+      #loading .bar i {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: #f0b35a;
+        transition: width 0.25s ease;
+      }
+      #loading .step {
+        margin-top: 12px;
+        min-height: 18px;
+        font-size: 12px;
+        color: #98a0ad;
+        font-variant-numeric: tabular-nums;
+      }
+      #loading .warn {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #e0a070;
+        white-space: pre-wrap;
+      }
+      #loading.failed .bar i {
+        background: #e0604c;
+      }
+    </style>
+    <link rel="stylesheet" href="./src/styles/app.css" />
+  </head>
+  <body>
+    <canvas id="view" tabindex="0" aria-label="K-Arena Yokohama 3D 모델"></canvas>
+    <div id="labels" aria-hidden="true"></div>
+    <div id="ui"></div>
+    <div id="loading" role="status" aria-live="polite">
+      <div class="box">
+        <h1>K-Arena Yokohama</h1>
+        <p class="sub">Kアリーナ横浜 · 3D 디지털 트윈 (비공식)</p>
+        <div class="bar"><i id="loading-bar"></i></div>
+        <div class="step" id="loading-step">불러오는 중…</div>
+        <div class="warn" id="loading-warn"></div>
+      </div>
+    </div>
+    <noscript>
+      <p style="position: fixed; inset: 0; display: grid; place-items: center; text-align: center">이 페이지는 WebGL과 JavaScript가 필요합니다.</p>
+    </noscript>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

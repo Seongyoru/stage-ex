@@ -1,0 +1,26 @@
+{"name":"arena_centroid_plateau","lon":139.6307285,"lat":35.4647196,"result":{"elevation":4.1,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"arena_front_plaza(ArenaFront)","lon":139.6301016,"lat":35.4649292,"result":{"elevation":4.1,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"arena_deck(ArenaDeck)","lon":139.6298726,"lat":35.4645507,"result":{"elevation":3.8,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"big_steps_bottom","lon":139.6298798,"lat":35.4648917,"result":{"elevation":3.4,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"north_gate_bottom","lon":139.6296568,"lat":35.4650135,"result":{"elevation":3.9,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"music_terrace_stage","lon":139.6297615,"lat":35.4648682,"result":{"elevation":3.9,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"music_terrace_plaza","lon":139.6294270,"lat":35.4642642,"result":{"elevation":3,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"music_terrace_square","lon":139.6290168,"lat":35.4644747,"result":null}
+{"name":"south_gate_bottom","lon":139.6294271,"lat":35.4639578,"result":{"elevation":5.1,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"south_road_centre(S of arena)","lon":139.6306000,"lat":35.4638800,"result":{"elevation":5.2,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"south_sidewalk(S of arena)","lon":139.6306000,"lat":35.4639700,"result":{"elevation":4.9,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"arena_SW_corner_outside","lon":139.6297800,"lat":35.4639800,"result":{"elevation":5.1,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"arena_SE_corner_outside","lon":139.6315500,"lat":35.4640800,"result":{"elevation":3.9,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"east_side_outside","lon":139.6316800,"lat":35.4647000,"result":{"elevation":3.5,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"arena_north_tip_outside","lon":139.6310500,"lat":35.4655000,"result":{"elevation":3.1,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"takashima_park_centre","lon":139.6306000,"lat":35.4656000,"result":{"elevation":3.4,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"takashima_park_waterfront","lon":139.6310500,"lat":35.4660500,"result":{"elevation":4.9,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"waterfront_edge_N","lon":139.6303000,"lat":35.4658500,"result":{"elevation":3.6,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"hilton_centre","lon":139.6294700,"lat":35.4642200,"result":{"elevation":3.2,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"ktower_centre","lon":139.6288100,"lat":35.4641900,"result":{"elevation":4.8,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"takashima_deck_landing_E","lon":139.6288320,"lat":35.4643998,"result":{"elevation":4.2,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"takashima_deck_landing_W","lon":139.6273871,"lat":35.4640800,"result":{"elevation":8.2,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"anpanman_museum","lon":139.6289000,"lat":35.4632000,"result":{"elevation":6.6,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"freight_line_Takashima","lon":139.6294288,"lat":35.4652966,"result":{"elevation":3.1,"hsrc":"1m\uff08\u30ec\u30fc\u30b6\uff09"}}
+{"name":"katabira_river_water","lon":139.6300000,"lat":35.4667000,"result":{"elevation":4,"hsrc":"10m"}}
+{"name":"port_water_E","lon":139.6335000,"lat":35.4650000,"result":{"elevation":0,"hsrc":"10m"}}

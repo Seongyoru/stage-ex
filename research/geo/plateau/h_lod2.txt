@@ -1,0 +1,23 @@
+HTTP/1.1 200 OK
+x-guploader-uploadid: AFy3sg0Ve11KFE4oXHK3c0cnqUVqwqpj3d6k038TPysZV9HgEoAEXb-7B0W0pit7TVaDMVysyeiXn4I
+x-goog-generation: 1764556890373422
+x-goog-metageneration: 1
+x-goog-stored-content-encoding: identity
+x-goog-stored-content-length: 42022
+x-goog-hash: crc32c=46gfUQ==
+x-goog-hash: md5=G2svdRYpYGkD3cYZKb6RuA==
+x-goog-storage-class: STANDARD
+accept-ranges: bytes
+access-control-allow-origin: *
+access-control-expose-headers: Content-Type,Content-Encoding
+server: UploadServer
+via: 1.1 google
+Date: Sun, 22 Nov 2026 11:23:55 GMT
+Age: 54757
+Last-Modified: Mon, 01 Dec 2025 02:41:30 GMT
+ETag: "1b6b2f751629606903ddc61929be91b8"
+Content-Type: text/plain; charset=utf-8
+Content-Length: 42022
+Cache-Control: public,max-age=3600
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+

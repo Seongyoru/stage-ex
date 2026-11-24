@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>K-Arena module preview</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html, body { margin: 0; height: 100%; background: #10141a; overflow: hidden; font: 12px/1.4 ui-monospace, Consolas, monospace; color: #cfd8e3; }
+      canvas { display: block; width: 100vw; height: 100vh; }
+      #hud { position: fixed; left: 8px; top: 8px; background: rgba(0, 0, 0, 0.55); padding: 6px 8px; border-radius: 4px; white-space: pre; pointer-events: none; max-width: 70vw; }
+      #hud.err { background: rgba(140, 0, 0, 0.85); color: #fff; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <div id="hud">loading…</div>
+    <script type="module" src="/src/dev/preview.js"></script>
+  </body>
+</html>

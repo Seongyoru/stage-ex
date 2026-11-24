@@ -1,0 +1,246 @@
+{
+ "_comment": "3D props generated with the local ComfyUI toolkit (Z-Image Turbo → BiRefNet → TRELLIS.2). size = real width x depth x height in metres (from research/00-consolidated.md section 10); faces = target triangle count. Run: node tools/gen/run-props.mjs [name ...] Trees are modelled procedurally (generated tree meshes were too blobby at an instancing-friendly triangle count).",
+ "style": "single object, isolated and centered, whole object in frame, three-quarter view from slightly above, plain pure white background, soft even diffuse studio lighting, no cast shadow, no text, no people, photorealistic product photo",
+ "props": [
+  {
+   "name": "moving_head",
+   "size": [
+    0.45,
+    0.45,
+    0.65
+   ],
+   "faces": 5000,
+   "tex": 512,
+   "seed": 101,
+   "prompt": "professional stage moving head wash light fixture, matte black body, large round lens face made of many small hexagonal honeycomb LED cells, U-shaped yoke arm and square base"
+  },
+  {
+   "name": "follow_spot",
+   "size": [
+    0.5,
+    1.6,
+    1.8
+   ],
+   "faces": 5000,
+   "tex": 512,
+   "seed": 102,
+   "prompt": "theatre follow spot light, long matte black cylindrical barrel with lens at the front, mounted on a black three-legged stand"
+  },
+  {
+   "name": "stanchion",
+   "size": [
+    0.35,
+    0.35,
+    0.95
+   ],
+   "faces": 2500,
+   "tex": 512,
+   "seed": 303,
+   "prompt": "queue stanchion post, mirror-polished silver chrome pole with a black retractable belt cassette head on top and a round silver chrome dome base"
+  },
+  {
+   "name": "lounge_table_set",
+   "size": [
+    1.8,
+    1.6,
+    0.75
+   ],
+   "faces": 6000,
+   "tex": 1024,
+   "seed": 104,
+   "prompt": "industrial style dining table with two long benches, black steel frame with riveted triangular gusset plates, rust-brown weathered steel effect table top, cobalt blue powder-coated steel bench seats"
+  },
+  {
+   "name": "bar_stool",
+   "size": [
+    0.45,
+    0.45,
+    1
+   ],
+   "faces": 4000,
+   "tex": 512,
+   "seed": 105,
+   "prompt": "bar stool with a dark grey leather bucket shell seat with white piping along the edge, slim black steel wire legs with a round footrest ring"
+  },
+  {
+   "name": "bar_table",
+   "size": [
+    0.7,
+    0.7,
+    1.05
+   ],
+   "faces": 3000,
+   "tex": 512,
+   "seed": 106,
+   "prompt": "round high bar table, dark top with a ribbed gold metal edge band, slim black column and flat round black disc base"
+  },
+  {
+   "name": "chandelier_lantern",
+   "size": [
+    1.6,
+    1.6,
+    1.4
+   ],
+   "faces": 8000,
+   "tex": 1024,
+   "seed": 107,
+   "prompt": "art deco chandelier, polished brass frame holding seven vertical ribbed frosted glass cylinder lanterns, hanging from a brass ceiling rod"
+  },
+  {
+   "name": "chandelier_ring",
+   "size": [
+    4,
+    4,
+    2
+   ],
+   "faces": 8000,
+   "tex": 1024,
+   "seed": 108,
+   "prompt": "large art deco ring chandelier, five stacked tiers of frosted glass rings held in a polished brass cage frame, hanging from a brass ceiling plate"
+  },
+  {
+   "name": "vip_barrel_chair",
+   "size": [
+    0.75,
+    0.75,
+    0.8
+   ],
+   "faces": 4000,
+   "tex": 512,
+   "seed": 309,
+   "prompt": "barrel lounge armchair upholstered in burgundy red leather with vertical channel stitching on the curved back, open seat cushion clearly visible, on a polished gold metal frame base, front three-quarter view"
+  },
+  {
+   "name": "vip_sofa",
+   "size": [
+    2.4,
+    1,
+    0.8
+   ],
+   "faces": 6000,
+   "tex": 1024,
+   "seed": 310,
+   "prompt": "curved lounge sofa with a tall rounded backrest wrapping around thick seat cushions, upholstered in mustard yellow boucle fabric, on a low dark plinth base, front three-quarter view showing the seat and the backrest"
+  },
+  {
+   "name": "lamp_post_banner",
+   "size": [
+    0.9,
+    0.6,
+    6.5
+   ],
+   "faces": 4000,
+   "tex": 512,
+   "seed": 111,
+   "prompt": "tall slim black street lamp post with a cylindrical glass lantern on top and two navy blue vertical fabric banners hanging from side arms, full height from base to top"
+  },
+  {
+   "name": "street_light",
+   "size": [
+    0.4,
+    1.5,
+    8.5
+   ],
+   "faces": 3000,
+   "tex": 512,
+   "seed": 312,
+   "prompt": "modern street light pole, tall slim dark grey steel pole with two flat rectangular dark grey LED lamp heads on short arms at the top, full height from base to top"
+  },
+  {
+   "name": "crowd_barrier",
+   "size": [
+    2,
+    0.5,
+    1.1
+   ],
+   "faces": 3000,
+   "tex": 512,
+   "seed": 113,
+   "prompt": "black steel crowd control barrier for events, rectangular tubular frame with vertical bars and two flat feet"
+  },
+  {
+   "name": "food_truck",
+   "size": [
+    4.2,
+    1.9,
+    2.6
+   ],
+   "faces": 8000,
+   "tex": 1024,
+   "seed": 114,
+   "prompt": "small Japanese kitchen car food truck based on a light van, white body with an open serving window on the side, a small striped awning and a menu board"
+  },
+  {
+   "name": "balcony_seat",
+   "size": [
+    0.55,
+    0.65,
+    1
+   ],
+   "faces": 2500,
+   "tex": 512,
+   "seed": 117,
+   "prompt": "theatre auditorium chair with tipped-up seat, vermilion red woven fabric upholstery on seat and back, dark walnut wood back panel and wooden armrests, black steel pedestal"
+  },
+  {
+   "name": "vip_seat",
+   "size": [
+    0.55,
+    0.65,
+    1
+   ],
+   "faces": 2500,
+   "tex": 512,
+   "seed": 118,
+   "prompt": "premium theatre auditorium chair, midnight blue waffle-weave fabric upholstery, reddish-brown wooden armrests and back panel, black steel pedestal"
+  },
+  {
+   "name": "plaza_bench",
+   "size": [
+    1.8,
+    0.5,
+    0.45
+   ],
+   "faces": 2500,
+   "tex": 512,
+   "seed": 119,
+   "prompt": "modern outdoor public bench with warm timber slat seat and black steel legs, no backrest"
+  },
+  {
+   "name": "planter",
+   "size": [
+    1.3,
+    1.3,
+    1.1
+   ],
+   "faces": 5000,
+   "tex": 512,
+   "seed": 320,
+   "prompt": "large round light grey concrete planter bowl holding one compact clipped spherical boxwood shrub, simple solid shapes"
+  },
+  {
+   "name": "vending_machine",
+   "size": [
+    1,
+    0.75,
+    1.83
+   ],
+   "faces": 2500,
+   "tex": 1024,
+   "seed": 121,
+   "prompt": "Japanese drink vending machine, white cabinet, illuminated display window showing rows of bottles and cans, coin slot panel on the right"
+  },
+  {
+   "name": "signage_totem",
+   "size": [
+    0.7,
+    0.25,
+    2.1
+   ],
+   "faces": 2000,
+   "tex": 512,
+   "seed": 122,
+   "prompt": "freestanding digital signage totem kiosk, slim black monolith with a tall portrait screen showing a simple blue wayfinding graphic"
+  }
+ ]
+}
