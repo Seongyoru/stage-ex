@@ -33,7 +33,7 @@ const ZB = GLASS_BOX.zBack; // 85.76 LEVEL 3 wall line
 const TOP = Y_LEAN_TOP;
 const BAYS_FRONT = 38; // 1.21 m module (38 bays counted on the photographs)
 const BAYS_SIDE = 8;
-const DOOR_Z = 94.55; // door line between the columns
+const DOOR_Z = GLASS_BOX.doorZ;
 const FIN = 0.35;
 
 /** Curtain-wall tiers: [y0, y1, level, kind] */
@@ -151,7 +151,7 @@ function curtainWall(col, detail) {
   wbox(cop, -HW - 0.06, TOP - 0.02, zr - 0.3, -HW + 0.3, TOP + 0.1, ZF - 0.3);
 }
 
-function doorStorey(col, doors) {
+function doorStorey(col) {
   // dark soffit under the box, from the door line out to the glass face
   const soffit = col.geo('facade.walkwaySoffit', { level: 3, part: 'entrance soffit' });
   wbox(soffit, -HW, Y_BAY0 - 0.25, DOOR_Z - 0.2, HW, Y_BAY0, ZF, 't');
@@ -175,7 +175,7 @@ function doorStorey(col, doors) {
   for (let i = 0; i < xs.length - 1; i++) {
     const a = xs[i] + 0.6;
     const b = xs[i + 1] - 0.6;
-    doorScreen(col, F, a, b, Y3, DOOR_H, { doors, entrance: '메인 엔트런스', bays: 3, transom: 2.5, inset: 0.05 });
+    doorScreen(col, F, a, b, Y3, DOOR_H, { bays: 3, open: [0, 1, 2], level: 3, transom: 2.5, inset: 0.05 });
     slab(transom, F, rect(a, yD, b, Y_BAY0 - 0.25), { t: 0.2, off: -0.02, edge: false });
     slab(col.geo('glassbox.litEntranceWarm', { level: 3, part: 'entrance glow' }), F, rect(a + 0.1, Y3 + 0.1, b - 0.1, yD - 0.1), { t: 0, off: -0.9, back: false });
   }
@@ -191,9 +191,9 @@ function doorStorey(col, doors) {
   return { yD, yTop: Y_BAY0 - 0.25, z: DOOR_Z };
 }
 
-export function buildGlassBox(col, { detail = true, doors }) {
+export function buildGlassBox(col, { detail = true } = {}) {
   curtainWall(col, detail);
-  return doorStorey(col, doors);
+  return doorStorey(col);
 }
 
 export const GLASSBOX_INFO = { DOOR_Z, BAYS_FRONT };

@@ -140,7 +140,9 @@ export function buildDecks(bag, rails, ctx) {
 
   // ============================== ARENA DECK ==============================
   const ring = ARENA_DECK_RING;
-  const holes = COLUMNS.map((c) => columnHole(c));
+  // The six threshold columns straddle the indoor/outdoor seam. A triangulator hole
+  // must be strictly inside its contour; paving runs up to those column bases.
+  const holes = COLUMNS.map(c => columnHole(c)).filter(hole => hole.every(([x, z]) => pointInRing(x, z, ring)));
   bag.add(paver, prism(ring, Y_DECK - SLAB, Y_DECK, { holes, bottom: false, sides: false }), 3);
   bag.add(soffit, prism(ring, Y_DECK - SLAB, Y_DECK, { holes, top: false, sides: false }), 1);
   // shafts of the column openings (thin dark joint round each column)
@@ -229,8 +231,8 @@ export function buildDecks(bag, rails, ctx) {
     // from the wall behind the column out to the free edge of the deck
     for (const [t0, t1] of clipLine([cx, cz], d, ring)) {
       if (t1 < -0.5 || t0 > 0.5) continue;
-      strip(bands, [cx, cz], d, t0 + 0.25, -0.75, 0.6, yB);
-      strip(bands, [cx, cz], d, 0.75, t1 - 0.5, 0.6, yB);
+      if (t0 + 0.25 < -0.75) strip(bands, [cx, cz], d, t0 + 0.25, -0.75, 0.6, yB);
+      if (t1 - 0.5 > 0.75) strip(bands, [cx, cz], d, 0.75, t1 - 0.5, 0.6, yB);
     }
   }
   // bands along the facade: on the column line and under the eave edge

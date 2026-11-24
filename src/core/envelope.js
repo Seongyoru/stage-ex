@@ -90,6 +90,7 @@ export const L3_WALL_RING = Object.freeze(SPEC.facade.rearWall.l3WallPolygon_G.m
 
 /** Glass box on the centre facet: plan rectangle and height range. */
 export const GLASS_BOX = Object.freeze({
+  doorZ: 94.55, // LEVEL 3 main entrance threshold between the columns
   halfWidth: SPEC.facade.glassBox.width_m / 2, // 23
   zBack: Z.l3RearWall,
   zFront: Z.glassBoxFace,

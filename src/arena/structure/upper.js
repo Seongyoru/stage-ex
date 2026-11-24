@@ -53,16 +53,25 @@ function level5(kit) {
     const lobbyIds = [gI.id, gO.id, gJ.id];
     kit.wall(C, 0, rBack, xJ(rBack), rBack, y5, c5, 0.2, 'mortar', 5, lobbyP.map((p) => ({ at: p, w: 3.0, h: c5 - y5 })));
     const kx = (lobbyP[0] + lobbyP[1]) / 2; // kiosk 5B / 5C between the two centre lobbies
-    kit.wall(C, 0, rFaceC, xJ(rFaceC), rFaceC, y5, c5, 0.4, 'mortar', 5, [...lobbyP.map((p) => ({ at: p, w: 2.4, h: 2.3 })), { at: kx, w: 8.2, h: 2.4 }, { at: 2.6, w: 0.95, h: 2.1 }]);
+    // Set the last gate back from the escalator well, leaving a walkable approach
+    // from the concourse around the end of the guard rail.
+    const recessStart = CIRC.esc.comb0 - 1.2;
+    const recessEnd = lobbyP[2] + 2.95;
+    const junctionFace = rFaceC - 1.3;
+    kit.wall(C, 0, rFaceC, recessStart, rFaceC, y5, c5, 0.4, 'mortar', 5, [...lobbyP.slice(0, 2).map((p) => ({ at: p, w: 2.4, h: 2.3 })), { at: kx, w: 8.2, h: 2.4 }, { at: 2.6, w: 0.95, h: 2.1 }]);
+    kit.wall(C, recessStart, junctionFace, recessEnd, junctionFace, y5, c5, 0.4, 'mortar', 5, [{ at: lobbyP[2] - recessStart, w: 2.4, h: 2.3 }]);
+    for (const p of [recessStart, recessEnd]) kit.wall(C, p, junctionFace, p, rFaceC, y5, c5, 0.2, 'mortar', 5);
+    kit.wall(C, recessEnd, rFaceC, xJ(rFaceC), rFaceC, y5, c5, 0.4, 'mortar', 5);
     kit.box(C, 2.125, 3.075, rFaceC - 0.03, rFaceC + 0.03, y5, y5 + 2.1, 'door', 5);
     lobbyP.forEach((p, i) => {
+      const gateFace = i === 2 ? junctionFace : rFaceC;
       for (const e of [-1.5, 1.5]) {
         // lobby side walls; the stair landings open into the neighbouring lobby
         const ops = [];
         if (i === 1 && e > 0) ops.push({ at: rLand - 0.7 - (rBack + 0.1), w: 1.2, h: 2.2 }); // the 4-5 stair opens into the 505 / 508 lobby
-        kit.wall(C, p + e, rBack + 0.1, p + e, rFaceC - 0.2, y5, c5, 0.2, 'red', 5, ops);
+        kit.wall(C, p + e, rBack + 0.1, p + e, gateFace - 0.2, y5, c5, 0.2, 'red', 5, ops);
       }
-      gateDoor(kit, C, 5, { p, q: rFaceC, axis: 'p', face: 1, y: y5, id: lobbyIds[i], board: i === 1 ? 1 : -1, wallH: c5 - y5 });
+      gateDoor(kit, C, 5, { p, q: gateFace, axis: 'p', face: 1, y: y5, id: lobbyIds[i], board: i === 1 ? 1 : -1, wallH: c5 - y5 });
     });
     kioskShell(kit, C, 5, { id: s < 0 ? '5B' : '5C', p: kx, q: rFaceC - 0.2, into: -1, y: y5, w: 8.2, depth: 2.4, top: y5 + 3.3 });
     // landings of the 4 → 5 flights inside the blocks

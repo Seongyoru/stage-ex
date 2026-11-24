@@ -16,6 +16,7 @@
 //   structure/signs.js        stencil wayfinding (canvas atlas, DOM-guarded)
 import * as THREE from 'three';
 import { Kit, LAYER } from './structure/kit.js';
+import { GateDoors } from './structure/gates.js';
 import { buildSlabs } from './structure/slabs.js';
 import buildLower from './structure/lower.js';
 import buildUpper from './structure/upper.js';
@@ -30,6 +31,7 @@ export async function build(ctx = {}) {
   group.name = 'structure';
   group.userData.layer = LAYER;
   const kit = new Kit();
+  kit.gates = new GateDoors();
   kit.quality = ctx.quality || 'high';
 
   buildSlabs(kit);
@@ -41,6 +43,8 @@ export async function build(ctx = {}) {
   finishLockers(kit);
   flushSigns(kit);
   kit.build(group);
+  kit.gates.build(group);
+  group.userData.gates = kit.gates;
   finishSigns();
   group.userData.info = kit.info; // kiosk recesses etc. for neighbouring modules
   return group;

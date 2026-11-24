@@ -334,7 +334,7 @@ export class UI {
         }),
       ),
       r.flySwitch,
-      h('p', { class: 'hint' }, tr('3층 입구 문을 바라보고 E를 누르세요. 터치 화면에서는 문 열기 안내를 누르세요.')),
+      h('p', { class: 'hint' }, tr('빨간 객석 게이트 앞에서 E를 누르세요. 터치 화면에서는 가운데 안내를 누르세요.')),
       h('p', { class: 'hint' }, h('b', null, 'W A S D'), tr(" 이동 · "), h('b', null, 'Shift'), tr(" 달리기 · "), h('b', null, 'Space'), tr(" 점프. 화면을 클릭하면 마우스로 시선을 움직입니다. 터치 기기에서는 왼쪽 아래 조이스틱을 사용하세요.")),
       r.walkInfo,
     );
@@ -646,10 +646,10 @@ export class UI {
   }
 
   setDoorPrompt(door) {
-    if (this.promptEntrance === door?.entrance && this.promptOpen === door?.open) return;
-    this.promptEntrance = door?.entrance;
+    if (this.promptGate === door?.id && this.promptOpen === door?.open) return;
+    this.promptGate = door?.id;
     this.promptOpen = door?.open;
-    this.doorPrompt = door ? tr(door.open ? '{0} · 문 닫기' : '{0} · 문 열기', tr(door.entrance)) : '';
+    this.doorPrompt = door ? tr(door.open ? '{0} · 문 닫기' : '{0} · 문 열기', 'GATE ' + door.id) : '';
     this.syncHud();
   }
 

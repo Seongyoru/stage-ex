@@ -83,6 +83,7 @@ export function viewById(id) {
  */
 export const WALK_STARTS = [
   { id: 'deck', ko: tr("Arena Deck · 메인 엔트런스 앞"), pos: [0, DECK_Y.arenaDeck, Z.rearEave + 3.2], face: [0, -1], inside: false },
+  { id: 'gate102', ko: 'LEVEL 1 · GATE 102', pos: [-21.32, 0.02, 56.25], face: [0, -1], inside: true },
   { id: 'l5', ko: tr("LEVEL 5 콘코스"), pos: [11, LEVEL_Y[5], 78.5], face: [-1, 0.15], inside: true },
   { id: 'arena', ko: tr("아레나 플로어"), pos: [0, 0, 26], face: [0, -1], inside: true },
   { id: 'stage', ko: tr("무대 위"), pos: [0, STAGE_H, -4], face: [0, 1], inside: true },

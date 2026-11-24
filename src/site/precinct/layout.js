@@ -5,7 +5,7 @@
 // PLATEAU annex outline, the official precinct map (terrace_map_sp.png), and the photo log
 // of research/exterior-site.md. Every lon/lat constant below is copied from those files.
 import { lonLatToWorld, NORTH_XZ } from '../../core/frame.js';
-import { COLUMNS, DECK_Y, L3_WALL_RING, LEVEL_Y, ROOF_OUTLINE, Z } from '../../core/envelope.js';
+import { COLUMNS, DECK_Y, GLASS_BOX, L3_WALL_RING, LEVEL_Y, ROOF_OUTLINE, Z } from '../../core/envelope.js';
 import { frame, lineHit, toL, toW } from './kit.js';
 
 export const Y_DECK = DECK_Y.arenaDeck; // +7.27 Arena Deck = LEVEL 3
@@ -228,8 +228,8 @@ const W_A = L3_WALL_RING[9]; // house-right end of the diagonal LEVEL 3 wall
 const W_B = L3_WALL_RING[8];
 const W_C = L3_WALL_RING[3];
 const W_D = L3_WALL_RING[2];
-// glass box, house-right → left; the deck runs 0.36 m under the glazing line to meet the interior slab
-const GB_Z = L3_WALL_RING[6][1] - 0.36;
+// The pavement and indoor floor share a single edge at the main door line.
+const GB_Z = GLASS_BOX.doorZ;
 const GB = [L3_WALL_RING[7], [L3_WALL_RING[6][0], GB_Z], [L3_WALL_RING[5][0], GB_Z], L3_WALL_RING[4]];
 
 /** Where the Hilton east face line meets the line through the house-right shoulder heading west. */

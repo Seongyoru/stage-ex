@@ -87,10 +87,10 @@ const W = { 1: frameW(1), '-1': frameW(-1) };
  * inner radius than the wings (`rc0` vs `rw0`); `box` adds the glass-box rectangle on the
  * rear centre; `aEnd` is the lateral end of the wings.
  */
-export function bandRing({ rc0, rw0 = rc0, r1, aEnd = A_IN, box = false, aEnd0 = aEnd }) {
+export function bandRing({ rc0, rw0 = rc0, r1, aEnd = A_IN, box = false, boxZ = BOX_Z, boxHalf = BOX_HALF, aEnd0 = aEnd }) {
   const ring = [];
   ring.push(W[1].pt(aEnd0, rw0), W[1].pt(aEnd, r1), [xJ(r1), r1 - RC0]);
-  if (box && BOX_Z > r1 - RC0) ring.push([BOX_HALF, r1 - RC0], [BOX_HALF, BOX_Z], [-BOX_HALF, BOX_Z], [-BOX_HALF, r1 - RC0]);
+  if (box && boxZ > r1 - RC0) ring.push([boxHalf, r1 - RC0], [boxHalf, boxZ], [-boxHalf, boxZ], [-boxHalf, r1 - RC0]);
   ring.push([-xJ(r1), r1 - RC0], W[-1].pt(aEnd, r1), W[-1].pt(aEnd0, rw0));
   ring.push([-xJ(rw0), rw0 - RC0]);
   if (Math.abs(rc0 - rw0) > 1e-6) ring.push([-xJ(rc0), rc0 - RC0], [xJ(rc0), rc0 - RC0]);

@@ -179,7 +179,7 @@ body.directory-page { background:#111419; color:var(--paper); overflow:auto; col
 .schedule-drawer summary>.ico:last-child { margin-left:auto; }
 .schedule-drawer[open] summary>.ico:last-child { transform:rotate(180deg); }
 .schedule-drawer .schedule-list { flex:auto; max-height:min(46dvh,380px); }
-.hud-door { border-color:#dcff7377; }
+#ui .hud.hud-door { left:50%; top:50%; bottom:auto; transform:translate(-50%,-50%); width:max-content; max-width:calc(100% - 20px); z-index:6; border-color:#dcff7399; }
 .hud-door button { display:flex; align-items:center; gap:10px; min-height:44px; padding:7px 15px 7px 8px; font-weight:650; }
 .hud-door kbd { display:grid; place-items:center; width:28px; height:28px; border-radius:6px; background:var(--citron); color:var(--ink); font:700 15px/1 system-ui; }
 @media(max-width:760px) {

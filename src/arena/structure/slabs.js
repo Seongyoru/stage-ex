@@ -4,7 +4,7 @@
 import { frameC, frameW, xJ, RC0, RW0 } from './kit.js';
 import { WING_ANGLE } from '../../core/seating.js';
 import { SPEC } from '../../core/spec.js';
-import { R, Y, wallIn, A_IN, A_ZONE, bandRing, rectRing, CIRC, BS } from './plan.js';
+import { R, Y, wallIn, A_IN, A_ZONE, bandRing, rectRing, CIRC, BS, GLASS_BOX } from './plan.js';
 
 const SIN = Math.sin(WING_ANGLE);
 const COS = Math.cos(WING_ANGLE);
@@ -113,7 +113,8 @@ export function buildSlabs(kit) {
   // LEVEL 3: main foyer, wing concourses, the cross-aisle behind the Lower Stand, glass box
   // (the 3 m cross-aisle directly behind row 29 is part of the stand, built by arena/bowl)
   // (the 3 m cross-aisle behind row 29 and the wall behind it, 0.3 m, are built by arena/bowl)
-  slab(kit, bandRing({ rc0: R.l3Back + 3.3, r1: wallIn(0), box: true }), [...hole13(...s13.open3), ...holeLifts()], Y[3], 3, 'floorFoyer');
+  const foyer = bandRing({ rc0: R.l3Back + 3.3, r1: wallIn(0), box: true, boxZ: GLASS_BOX.doorZ, boxHalf: GLASS_BOX.halfWidth });
+  slab(kit, foyer, [...hole13(...s13.open3), ...holeLifts()], Y[3], 3, 'floorFoyer');
 
   // LEVEL 4: mezzanine
   slab(kit, l4Ring(), [], Y[4], 4, 'floorSealed', 0.3);

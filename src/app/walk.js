@@ -2,7 +2,7 @@
 //
 // Collider: the static meshes of the bowl, structure, hall, precinct and ground layers,
 // merged into one position-only geometry with a bounds tree. Seats and the facade are
-// not part of it. The entrance doors have separate moving colliders.
+// not part of it. The moving seating gates use their own hinge collision.
 //
 // Controller: a capsule that covers the body ABOVE step height handles walls, rails and
 // ceilings; the feet follow the floor found by rays cast down from step height, so

@@ -36,7 +36,7 @@ export function column(kit, f, p, q, size, y0, y1, matOf, levels = LEVELS) {
  *   board: ±1 puts the gate board and the big stencil numerals on the wall beside the door
  *          (toward +axis or −axis); 0 = no board (boards can be placed separately).
  */
-export function gateDoor(kit, f, level, { p, q, axis = 'p', face = 1, y, id, w = 2.4, h = 2.3, t = 0.4, board = 1, wallH = 3.2, leafOpen = 0 }) {
+export function gateDoor(kit, f, level, { p, q, axis = 'p', face = 1, y, id, w = 2.4, h = 2.3, t = 0.4, board = 1, wallH = 3.2 }) {
   const along = axis === 'p' ? [1, 0] : [0, 1];
   const across = axis === 'p' ? [0, face] : [face, 0];
   const L = (u, v) => [p + along[0] * u + across[0] * v, q + along[1] * u + across[1] * v]; // u along the wall, v toward the public
@@ -53,22 +53,13 @@ export function gateDoor(kit, f, level, { p, q, axis = 'p', face = 1, y, id, w =
   // transom panel above the leaves
   const hl = h - 0.09 - 0.42; // leaf height
   bx(-w / 2 + 0.09, w / 2 - 0.09, -0.03, 0.03, y + hl, y + h - 0.09, 'gateDoor');
-  // leaves (closed), kick plates, pull bars on both faces
-  const lw = (w - 0.18) / 2;
-  for (const sgn of [-1, 1]) {
-    const u0 = sgn < 0 ? -lw : 0.004;
-    const u1 = sgn < 0 ? -0.004 : lw;
-    bx(u0, u1, -0.028, 0.028, y + 0.01, y + hl - 0.01, 'gateDoor');
-    bx(u0 + 0.02, u1 - 0.02, -0.032, 0.032, y + 0.01, y + 0.22, 'stainless');
-    for (const v of [-0.075, 0.075]) {
-      const uh = sgn * 0.14;
-      bx(uh - 0.018, uh + 0.018, Math.min(v, v - Math.sign(v) * 0.03), Math.max(v, v - Math.sign(v) * 0.03), y + 0.82, y + 1.42, 'stainless');
-      for (const yy of [0.86, 1.38]) bx(uh - 0.012, uh + 0.012, Math.min(0, v), Math.max(0, v), y + yy - 0.012, y + yy + 0.012, 'stainless');
-    }
-  }
+  const [x, z] = f.pt(p, q);
+  const [ux, uz] = f.dir(...along);
+  const n = f.dir(...across);
+  kit.gates.pairs.push({ id, level, x, y, z, u: [ux, 0, uz], n: [n[0], 0, n[1]],
+    half: (w - 0.18) / 2, height: hl, angle: 0, open: false });
   // "GATE nnn" on the transom, public side
   const c = L(0, 0.034);
-  const n = f.dir(across[0], across[1]);
   const [cx, cz] = f.pt(c[0], c[1]);
   sign(kit, level, [cx, y + hl + 0.2, cz], n, 1.05, 0.34, { kind: 'text', lines: [`GATE ${id}`] }, 0.004);
   // exit lamp over the door

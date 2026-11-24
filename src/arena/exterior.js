@@ -20,7 +20,6 @@ import { buildEave } from './exterior/eave.js';
 import { buildRear } from './exterior/rear.js';
 import { buildGlassBox } from './exterior/glassbox.js';
 import { buildSigns } from './exterior/signs.js';
-import { EntranceDoors } from './exterior/doors.js';
 
 /** Standard materials that receive a night emissive wash: [id, colour, intensity]. */
 const NIGHT_WASH = [
@@ -43,14 +42,11 @@ export function build(ctx = {}) {
   buildFlanks(col, { detail });
   buildRoof(col, { detail });
   buildEave(col, { detail });
-  const doors = new EntranceDoors();
-  buildRear(col, { detail, doors });
-  const entrance = buildGlassBox(col, { detail, doors });
+  buildRear(col, { detail });
+  const entrance = buildGlassBox(col, { detail });
   buildSigns(col, entrance, { detail });
   const triangles = col.build(group, night);
   group.add(night);
-  doors.build(group);
-  group.userData.entranceDoors = doors;
 
   group.userData.exterior = {
     night: false,

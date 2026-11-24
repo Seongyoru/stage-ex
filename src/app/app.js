@@ -220,7 +220,7 @@ export class App {
       this.labels.removeByPrefix(`${result.id}-`);
     }
     this.modules.set(result.id, result);
-    if (result.id === 'arena/exterior') this.walker.doors = result.group?.userData.entranceDoors;
+    if (result.id === 'arena/structure') this.walker.doors = result.group?.userData.gates;
     if (result.status !== 'ok') return;
     const { group, mod, id } = result;
     this.model.add(group);
@@ -344,7 +344,7 @@ export class App {
 
   applyVisibility() {
     this.visibility.apply(this.s);
-    if (this.walker.doors) this.walker.doors.enabled = this.s.layers.exterior !== false;
+    if (this.walker.doors) this.walker.doors.enabled = this.s.layers.structure !== false;
     this.renderer.shadowMap.needsUpdate = true;
     this.invalidate();
   }
