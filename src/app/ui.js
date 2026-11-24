@@ -39,7 +39,10 @@ function segmented(options, value, onChange, cls = '') {
     return [o.value, b];
   });
   el.setValue = (v) => {
-    for (const [val, b] of buttons) b.classList.toggle('on', val === v);
+    for (const [val, b] of buttons) {
+      b.classList.toggle('on', val === v);
+      b.setAttribute('aria-pressed', String(val === v));
+    }
   };
   el.setValue(value);
   return el;
@@ -96,10 +99,14 @@ export class UI {
       }),
     );
     const tool = (name, label, fn) => h('button', { type: 'button', class: 'tool', title: label, 'aria-label': label, onClick: fn }, icon(name));
+    r.panelToggle = h('button', {
+      type: 'button', class: 'tool menu-btn', title: tr("패널 열기 / 닫기"), 'aria-label': tr("패널 열기 / 닫기"),
+      'aria-controls': 'viewer-controls', 'aria-expanded': String(!narrow), onClick: () => this.togglePanel(),
+    }, icon('panel'));
     r.topbar = h(
       'header',
       { class: 'topbar' },
-      h('button', { type: 'button', class: 'tool menu-btn', title: tr("패널"), 'aria-label': tr("패널 열기 / 닫기"), onClick: () => this.togglePanel() }, icon('menu')),
+      r.panelToggle,
       h('a', { class: 'venues-home', href: '?lang=' + language, title: tr('공연장 목록'), 'aria-label': tr('공연장 목록') }, 'Stage ', h('i', null, 'EX')),
       h('button', { type: 'button', class: 'brand', onClick: () => app.goHome(), title: tr("전경으로") }, h('b', null, 'K-Arena Yokohama')),
       r.tabs,
@@ -132,9 +139,11 @@ export class UI {
     r.status = h('div', { class: 'status' });
     r.panel = h(
       'aside',
-      { class: 'panel', 'aria-label': tr("조작 패널") },
-      h('div', { class: 'panel-scroll' }, Object.values(r.panes), h('details', { class: 'group', open: !narrow }, h('summary', null, tr("장면")), r.scene), h('details', { class: 'group' }, h('summary', null, tr("표시 레이어")), r.layers), r.status),
+      { class: 'panel', id: 'viewer-controls', 'aria-label': tr("조작 패널") },
+      h('div', { class: 'panel-scroll' }, Object.values(r.panes), r.scene,
+        h('details', { class: 'group' }, h('summary', null, icon('levels', 16), tr("표시 레이어")), r.layers), r.status),
     );
+    r.panel.inert = narrow;
     if (narrow) this.root.classList.add('panel-closed');
 
     // --- HUD, toast, compass, joystick ----------------------------------------------------
@@ -154,19 +163,46 @@ export class UI {
 
   // --- explore pane -----------------------------------------------------------------------
   buildExplore() {
-    const app = this.app;
-    this.refs.viewButtons = new Map();
-    const grid = (group) =>
-      h(
-        'div',
-        { class: 'chip-grid' },
-        VIEWS.filter((v) => v.group === group).map((v) => {
-          const b = h('button', { type: 'button', class: 'chip', onClick: () => app.goView(v.id) }, v.ko, v.key ? h('kbd', null, v.key) : null);
-          this.refs.viewButtons.set(v.id, b);
-          return b;
-        }),
-      );
-    return h('section', { class: 'pane', dataset: { pane: 'explore' } }, h('h2', null, tr("외부 시점")), grid('out'), h('h2', null, tr("내부 시점")), grid('in'), h('p', { class: 'hint' }, tr("드래그로 회전, 휠로 확대합니다. 건물 안이나 지붕을 연 상태에서 좌석을 클릭하면 그 자리의 시야를 볼 수 있습니다.")));
+    const r = this.refs;
+    r.viewButtons = new Map();
+    r.viewGroups = {};
+    const cards = h('div', { class: 'view-cards', role: 'group', 'aria-label': tr('시점 선택') });
+    const pane = h('section', { class: 'pane', dataset: { pane: 'explore' } },
+      h('h2', null, tr('시점 선택')), cards);
+    for (const [id, label, image, featured] of [
+      ['out', '외부 시점', 'control-exterior', ['overview', 'front', 'aerial']],
+      ['in', '내부 시점', 'control-interior', ['upper', 'stage', 'arena']],
+    ]) {
+      const views = VIEWS.filter(view => view.group === id);
+      const card = h('button', { type: 'button', class: 'view-card', 'aria-controls': 'views-' + id,
+        onClick: () => this.showViewGroup(id) },
+        h('img', { src: './venues/' + image + '.webp', alt: '', width: 300, height: 160 }),
+        h('span', null, tr(label)), icon('check', 14));
+      const makeRow = view => {
+        const b = h('button', { type: 'button', class: 'view-row', onClick: () => this.app.goView(view.id) },
+          h('span', { class: 'view-dot', 'aria-hidden': 'true' }), h('span', null, view.ko),
+          view.key ? h('kbd', null, view.key) : null);
+        r.viewButtons.set(view.id, b);
+        return b;
+      };
+      const extra = h('details', { class: 'more-views' },
+        h('summary', null, tr('다른 시점'), h('span', { class: 'view-count' }, String(views.length - featured.length)), icon('chevDown', 14)),
+        views.filter(v => !featured.includes(v.id)).map(makeRow));
+      const list = h('div', { id: 'views-' + id, class: 'view-list' },
+        views.filter(v => featured.includes(v.id)).map(makeRow), extra);
+      cards.append(card);
+      pane.append(list);
+      r.viewGroups[id] = { card, list, extra };
+    }
+    this.showViewGroup('out');
+    return pane;
+  }
+
+  showViewGroup(group) {
+    for (const [id, { card, list }] of Object.entries(this.refs.viewGroups)) {
+      card.setAttribute('aria-pressed', String(id === group));
+      list.hidden = id !== group;
+    }
   }
 
   // --- seat pane --------------------------------------------------------------------------
@@ -402,7 +438,12 @@ export class UI {
       'high',
       (q) => app.setQuality(q),
     );
-    return h('div', { class: 'scene' }, r.daySeg, Object.values(r.sw), h('div', { class: 'inline' }, h('span', null, tr("품질")), r.qualitySeg));
+    const sw = r.sw;
+    return h('div', { class: 'scene' },
+      h('div', { class: 'time-row' }, h('span', null, tr('시간대')), r.daySeg),
+      h('details', { class: 'group' }, h('summary', null, icon('settings', 16), tr('장면 설정')),
+        sw.show, sw.telescopic, sw.arenaSeats, sw.stageKit, sw.curtains, sw.roofOpen, sw.labels, sw.aerial,
+        h('div', { class: 'inline' }, h('span', null, tr("품질")), r.qualitySeg)));
   }
 
   buildLayerList() {
@@ -498,6 +539,8 @@ export class UI {
   togglePanel(open) {
     const closed = open === undefined ? !this.root.classList.contains('panel-closed') : !open;
     this.root.classList.toggle('panel-closed', closed);
+    this.refs.panel.inert = closed;
+    this.refs.panelToggle.setAttribute('aria-expanded', String(!closed));
     // the bottom sheet slides for 250 ms on phones
     this.app.layoutChanged();
     setTimeout(() => this.app.layoutChanged(), 280);
@@ -533,7 +576,15 @@ export class UI {
       this.root.dataset.mode = active;
     }
     if (has('flightStart') || has('fly')) for (const [id, b] of r.flightButtons) b.classList.toggle('on', id === s.flightStart);
-    if (has('view') || has('mode')) for (const [id, b] of r.viewButtons) b.classList.toggle('on', s.mode === 'explore' && s.view === id);
+    if (has('view') || has('mode')) {
+      const selected = s.mode === 'explore' && VIEWS.find(v => v.id === s.view);
+      if (selected) {
+        this.showViewGroup(selected.group);
+        const { extra } = r.viewGroups[selected.group];
+        if (extra.contains(r.viewButtons.get(selected.id))) extra.open = true;
+      }
+      for (const [id, b] of r.viewButtons) b.setAttribute('aria-pressed', String(!!selected && selected.id === id));
+    }
     if (has('night')) r.daySeg.setValue(s.night);
     for (const k of Object.keys(r.sw)) if (has(k)) r.sw[k].input.checked = !!s[k];
     if (has('quality')) r.qualitySeg.setValue(s.quality);

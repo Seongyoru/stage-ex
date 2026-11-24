@@ -807,7 +807,10 @@ export class App {
     const wake = () => this.touch();
     for (const ev of ['pointerdown', 'pointermove', 'wheel', 'keydown', 'touchstart']) addEventListener(ev, wake, { passive: true, capture: true });
     addEventListener('resize', () => this.resize());
-    if (window.ResizeObserver) new ResizeObserver(() => this.resize()).observe(dom);
+    if (window.ResizeObserver) {
+      new ResizeObserver(() => this.resize()).observe(dom);
+      new ResizeObserver(() => this.layoutChanged()).observe(this.ui.refs.panel);
+    }
 
     this.rig.onUserMove = (phase) => {
       if (this.s.view && this.s.mode === 'explore') this.set({ view: null });

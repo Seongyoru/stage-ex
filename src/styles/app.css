@@ -376,42 +376,11 @@ kbd {
   margin: 8px 0 0;
 }
 
-.chip-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-.chip {
-  position: relative;
-  min-height: 36px;
-  padding: 7px 26px 7px 10px;
-  text-align: left;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.025);
-  font-size: 12px;
-  line-height: 1.25;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.chip kbd {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 0;
-  color: var(--dim);
-  padding: 0;
-}
-
-.chip:hover,
 .list-item:hover {
   background: var(--hover);
   border-color: var(--line-strong);
 }
 
-.chip.on,
 .list-item.on {
   background: var(--active);
   border-color: rgba(240, 179, 90, 0.55);

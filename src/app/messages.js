@@ -1,5 +1,9 @@
 // Korean source text maps to English and Japanese. Numbered slots can be reordered by locale.
 export const messages = {
+  "시점 선택": ["Camera views","視点を選ぶ"],
+  "다른 시점": ["More viewpoints","その他の視点"],
+  "시간대": ["Time of day","時間帯"],
+  "장면 설정": ["Scene settings","シーン設定"],
   "이동": ["Move","移動"],
   "비행 시작": ["Start flying","飛行を開始"],
   "시선": ["Look around","視点操作"],

@@ -35,6 +35,9 @@ export function clear(el) {
 
 // Inline icons (24 px grid, stroke = currentColor). Static strings only.
 const ICONS = {
+  panel: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/>',
+  check: '<path d="m5 12 4.5 4.5L19 7"/>',
+  settings: '<path d="M3 7h4m4 0h10M3 17h10m4 0h4"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/>',
   explore: '<circle cx="12" cy="12" r="9"/><path d="m16 8-2.7 5.3L8 16l2.7-5.3z"/>',
   fly: '<path d="m3 11 18-7-7 17-2.6-7.4L3 11Z"/><path d="m11.4 13.6 5-5"/>',
   seat: '<path d="M5 4h3l2 9h8a2 2 0 0 1 2 2v1H8L5 4Zm4 12-1 4m9-4 1 4"/>',
