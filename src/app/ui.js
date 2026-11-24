@@ -1,6 +1,7 @@
 import { language, languageSelect, tr } from './i18n.js';
 import { openGuide } from './guide.js';
 import { buildUrl } from './urlstate.js';
+import { scheduleBanner } from './schedule.js';
 // The Korean user interface: top bar with mode tabs, the control panel, the bottom
 // readout (HUD), dialogs, toast, compass and the touch joystick. Plain DOM, no framework.
 import { NORTH_XZ } from '../core/frame.js';
@@ -157,6 +158,15 @@ export class UI {
     r.dialog = this.buildDialog();
 
     this.root.append(r.topbar, r.panel, r.hud, r.credit, r.compass, r.joy, this.buildLiftControls(), r.toast, r.restore, r.dialog);
+    const schedule = scheduleBanner(true);
+    const mobile = matchMedia('(max-width: 760px)');
+    const placeSchedule = () => {
+      schedule.open = false;
+      if (mobile.matches) r.panel.querySelector('.panel-scroll').prepend(schedule);
+      else this.root.append(schedule);
+    };
+    placeSchedule();
+    mobile.addEventListener('change', placeSchedule);
     this.setCredit(false);
     this.syncAll();
   }

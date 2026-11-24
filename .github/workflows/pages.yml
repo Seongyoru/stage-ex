@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '17 15 * * *' # 00:17 Japan time
 
 permissions:
   contents: read
@@ -22,6 +24,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Refresh K-Arena performance dates
+        run: python3 tools/update_schedule.py
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5
         with:

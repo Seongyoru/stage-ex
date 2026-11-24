@@ -2,7 +2,8 @@ import { h, icon } from './app/dom.js';
 import { openGuide } from './app/guide.js';
 import { language, languageSelect, tr } from './app/i18n.js';
 
-import { venues } from './venues.js';
+import { venues, kArena } from './venues.js';
+import { scheduleBanner } from './app/schedule.js';
 
 export function directory() {
   const header = h('header', { class: 'directory-header' },
@@ -26,7 +27,8 @@ export function directory() {
       h('div', { class: 'scene-cards' }, venue.shortcuts.map(({ label, params, image }) =>
         h('a', { href: url(params) }, h('img', { src: image, alt: '', loading: 'lazy' }),
           h('span', null, tr(label)), icon('chevRight', 17)))));
-    list.append(h('article', null, link, shortcuts));
+    const feature = venue.id === kArena.id ? h('div', { class: 'venue-layout' }, link, scheduleBanner()) : link;
+    list.append(h('article', null, feature, shortcuts));
   }
   const root = h('div', { class: 'directory' }, header, list);
   document.body.append(root);

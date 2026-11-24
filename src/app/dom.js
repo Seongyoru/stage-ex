@@ -35,6 +35,7 @@ export function clear(el) {
 
 // Inline icons (24 px grid, stroke = currentColor). Static strings only.
 const ICONS = {
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-14 4h3m3 0h3"/>',
   panel: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/>',
   check: '<path d="m5 12 4.5 4.5L19 7"/>',
   settings: '<path d="M3 7h4m4 0h10M3 17h10m4 0h4"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/>',

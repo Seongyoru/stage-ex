@@ -1,5 +1,12 @@
 // Korean source text maps to English and Japanese. Numbered slots can be reordered by locale.
 export const messages = {
+  "공연 일정": ["Upcoming shows","公演スケジュール"],
+  "공식 일정": ["Official schedule","公式日程"],
+  "일본 현지 시간": ["Japan local time","日本現地時間"],
+  "시간 미정": ["Time TBA","開演時間未定"],
+  "아직 발표된 공연이 없습니다.": ["No shows announced yet.","発表済みの公演はありません。"],
+  "오늘": ["Today","今日"],
+  "{0} 확인": ["Checked {0}","{0} 確認"],
   "시점 선택": ["Camera views","視点を選ぶ"],
   "다른 시점": ["More viewpoints","その他の視点"],
   "시간대": ["Time of day","時間帯"],
