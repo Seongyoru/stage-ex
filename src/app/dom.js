@@ -35,6 +35,12 @@ export function clear(el) {
 
 // Inline icons (24 px grid, stroke = currentColor). Static strings only.
 const ICONS = {
+  explore: '<circle cx="12" cy="12" r="9"/><path d="m16 8-2.7 5.3L8 16l2.7-5.3z"/>',
+  fly: '<path d="m3 11 18-7-7 17-2.6-7.4L3 11Z"/><path d="m11.4 13.6 5-5"/>',
+  seat: '<path d="M5 4h3l2 9h8a2 2 0 0 1 2 2v1H8L5 4Zm4 12-1 4m9-4 1 4"/>',
+  walk: '<circle cx="14" cy="4" r="1.7"/><path d="m7 12 3-5 4 1 2 4 3 1m-6-5-2 6 4 3v4m-4-7-3 6"/>',
+  section: '<path d="M4 19V8l8-4 8 4v11H4ZM3 13h18" stroke-dasharray="0"/><path d="m7 18 4-4m2 4 4-4"/>',
+  levels: '<path d="m3 8 9-5 9 5-9 5-9-5Zm0 5 9 5 9-5M3 17l9 5 9-5"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
   book: '<path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/>',
   share: '<path d="M10 14 20 4M20 4h-6M20 4v6"/><path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/>',

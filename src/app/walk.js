@@ -164,8 +164,20 @@ export class Walker {
 
   stop() {
     this.active = false;
+    this.moving = false;
     this.keys.clear();
     this.joy.set(0, 0);
+    this.lift = 0;
+  }
+
+  startFlight(eye) {
+    this.stop();
+    this.pos.fromArray(eye);
+    this.pos.y -= EYE;
+    this.grounded = false;
+    this.vy = 0;
+    this.fly = this.active = true;
+    this._face = null;
   }
 
   eye(target = new THREE.Vector3()) {
@@ -284,6 +296,7 @@ export class Walker {
       this.pos.addScaledVector(this._fwd, f * speed * dt).addScaledVector(this._right, s * speed * dt);
       if (K.has('Space') || K.has('KeyE')) this.pos.y += speed * 0.7 * dt;
       if (K.has('KeyC') || K.has('KeyQ')) this.pos.y -= speed * 0.7 * dt;
+      if (this.lift) this.pos.y += this.lift * speed * 0.7 * dt;
       this.vy = 0;
     } else {
       const speed = run ? RUN : WALK;

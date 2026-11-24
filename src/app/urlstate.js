@@ -29,8 +29,10 @@ export function parseUrl(search = location.search) {
   if (view === 'seat') {
     out.mode = 'seat';
     out.seat = { level: num(q.get('level')) ?? 5, row: num(q.get('row')) ?? 1, num: num(q.get('seat')) ?? NaN };
-  } else if (view === 'walk') {
+  } else if (view === 'walk' || view === 'fly') {
     out.mode = 'walk';
+    out.fly = view === 'fly';
+    if (out.fly) out.flightStart = q.get('start') || 'plaza';
     out.walkStart = q.get('start') || 'deck';
   } else if (view === 'section') {
     out.mode = 'section';
@@ -80,8 +82,9 @@ export function buildUrl(s, pose, keep = {}) {
     q.set('row', s.seat.row);
     q.set('seat', s.seat.num);
   } else if (s.mode === 'walk') {
-    q.set('view', 'walk');
-    q.set('start', s.walkStart || 'deck');
+    q.set('view', s.fly ? 'fly' : 'walk');
+    q.set('start', s.fly ? s.flightStart || 'plaza' : s.walkStart || 'deck');
+    if (s.fly && pose?.kind === 'look') q.set('cam', [...pose.pos, ...pose.target, pose.fov].map(r1).join(','));
   } else if (s.mode === 'section') {
     q.set('view', 'section');
     q.set('axis', AXIS_OUT[s.sectionAxis]);

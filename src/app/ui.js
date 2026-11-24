@@ -8,12 +8,13 @@ import { PARTS, uvToWorld } from '../core/seating.js';
 import { h, append, clear, icon, fmt } from './dom.js';
 import { factsContent, aboutContent, helpContent } from './info.js';
 import { TIERS, TIER_INFO, rowsOf, seatNumbers, seatMetrics, nearestGate, seatKindKo, seatTitle, tierKo, isSpecial } from './seats.js';
-import { VIEWS, WALK_STARTS, LEVEL_INFO, SECTION_RANGE } from './views.js';
+import { VIEWS, WALK_STARTS, FLIGHT_STARTS, LEVEL_INFO, SECTION_RANGE } from './views.js';
 
 const MODES = [
   { id: 'explore', ko: tr("둘러보기") },
   { id: 'seat', ko: tr("좌석 시야") },
   { id: 'walk', ko: tr("걷기") },
+  { id: 'fly', ko: tr('날기') },
   { id: 'section', ko: tr("단면") },
   { id: 'levels', ko: tr("층별") },
 ];
@@ -89,7 +90,7 @@ export class UI {
       'nav',
       { class: 'tabs', 'aria-label': tr("모드") },
       MODES.map((m) => {
-        const b = h('button', { type: 'button', dataset: { mode: m.id } }, m.ko);
+        const b = h('button', { type: 'button', dataset: { mode: m.id } }, icon(m.id, 16), h('span', null, m.ko));
         b.addEventListener('click', () => app.setMode(m.id));
         return b;
       }),
@@ -122,6 +123,7 @@ export class UI {
       explore: this.buildExplore(),
       seat: this.buildSeat(),
       walk: this.buildWalk(),
+      fly: this.buildFlight(),
       section: this.buildSection(),
       levels: this.buildLevels(),
     };
@@ -145,7 +147,7 @@ export class UI {
     r.credit = h('button', { type: 'button', class: 'credit', title: tr("출처 · 안내"), onClick: () => this.openDialog('about') });
     r.dialog = this.buildDialog();
 
-    this.root.append(r.topbar, r.panel, r.hud, r.credit, r.compass, r.joy, r.toast, r.restore, r.dialog);
+    this.root.append(r.topbar, r.panel, r.hud, r.credit, r.compass, r.joy, this.buildLiftControls(), r.toast, r.restore, r.dialog);
     this.setCredit(false);
     this.syncAll();
   }
@@ -292,6 +294,33 @@ export class UI {
   }
 
   // --- section pane -----------------------------------------------------------------------
+  buildFlight() {
+    this.refs.flightButtons = new Map();
+    return h('section', { class: 'pane', dataset: { pane: 'fly' } },
+      h('h2', null, tr('비행 출발점')),
+      h('div', { class: 'list' }, FLIGHT_STARTS.map(start => {
+        const button = h('button', { type: 'button', class: 'list-item', onClick: () => this.app.startFlight(start.id) }, tr(start.label));
+        this.refs.flightButtons.set(start.id, button);
+        return button;
+      })),
+      h('p', { class: 'hint' }, tr('하늘에서 공연장과 광장을 자유롭게 둘러보세요.')));
+  }
+
+  buildLiftControls() {
+    const make = (dir, label) => {
+      const b = h('button', { type: 'button', 'aria-label': tr(label), title: tr(label) }, icon(dir > 0 ? 'chevUp' : 'chevDown'));
+      b.addEventListener('pointerdown', e => {
+        b.setPointerCapture(e.pointerId);
+        this.app.walker.lift = dir;
+      });
+      const release = () => { if (this.app.walker.lift === dir) this.app.walker.lift = 0; };
+      b.addEventListener('lostpointercapture', release);
+      b.addEventListener('click', e => { if (e.detail === 0) this.app.walker.pos.y += dir; });
+      return b;
+    };
+    return h('div', { class: 'flight-lift' }, make(1, '상승'), make(-1, '하강'));
+  }
+
   buildSection() {
     const app = this.app;
     const r = this.refs;
@@ -454,7 +483,7 @@ export class UI {
     r.dialogTitle.textContent = title;
     clear(r.dialogBody).append(make());
     if (name === 'help') r.dialogBody.prepend(h('button', {
-      type: 'button', class: 'ghost-btn', onClick: () => { this.closeDialog(); openGuide(); },
+      type: 'button', class: 'ghost-btn', onClick: () => { this.closeDialog(); openGuide(false, this.root.dataset.mode); },
     }, tr('조작 안내 다시 보기')));
     r.dialog.hidden = false;
     r.dialogBody.scrollTop = 0;
@@ -494,11 +523,16 @@ export class UI {
     const has = (k) => !changed || changed.includes(k);
 
     if (has('ui')) this.root.classList.toggle('ui-hidden', !s.ui);
-    if (has('mode')) {
-      for (const b of r.tabs.children) b.classList.toggle('on', b.dataset.mode === s.mode);
-      for (const [id, pane] of Object.entries(r.panes)) pane.hidden = id !== s.mode;
-      this.root.dataset.mode = s.mode;
+    if (has('mode') || has('fly')) {
+      const active = s.mode === 'walk' && s.fly ? 'fly' : s.mode;
+      for (const b of r.tabs.children) {
+        b.classList.toggle('on', b.dataset.mode === active);
+        b.setAttribute('aria-pressed', String(b.dataset.mode === active));
+      }
+      for (const [id, pane] of Object.entries(r.panes)) pane.hidden = id !== active;
+      this.root.dataset.mode = active;
     }
+    if (has('flightStart') || has('fly')) for (const [id, b] of r.flightButtons) b.classList.toggle('on', id === s.flightStart);
     if (has('view') || has('mode')) for (const [id, b] of r.viewButtons) b.classList.toggle('on', s.mode === 'explore' && s.view === id);
     if (has('night')) r.daySeg.setValue(s.night);
     for (const k of Object.keys(r.sw)) if (has(k)) r.sw[k].input.checked = !!s[k];
@@ -595,8 +629,8 @@ export class UI {
     } else if (s.mode === 'walk') {
       hud.classList.add('hud-hint');
       append(hud, [
-        s.fly ? h('b', null, tr("비행 모드 · ")) : null,
-        s.locked ? tr("WASD 이동 · Shift 달리기 · Space 점프 · F 비행 · Esc 마우스 해제") : tr("화면을 클릭하면 마우스로 시선을 움직입니다 · WASD 이동 · F 비행"),
+        s.fly ? tr(matchMedia('(pointer: coarse)').matches ? '스틱으로 이동 · 드래그로 시선 · 화살표로 높이 조절' : 'WASD 이동 · E 상승 · Q 하강 · Shift 가속') :
+          s.locked ? tr("WASD 이동 · Shift 달리기 · Space 점프 · F 비행 · Esc 마우스 해제") : tr("화면을 클릭하면 마우스로 시선을 움직입니다 · WASD 이동 · F 비행"),
       ]);
     } else if (s.mode === 'explore' && s.picked) {
       const seat = s.picked;

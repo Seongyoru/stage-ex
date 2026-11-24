@@ -67,6 +67,12 @@ export const VIEWS = [
 
 export const HOME_VIEW = 'overview';
 
+export const FLIGHT_STARTS = [
+  { id: 'plaza', label: '메인 광장 상공', pos: [-55, 47, 182], target: [0, 21, 83] },
+  { id: 'roof', label: '지붕 위', pos: [-104, 98, 92], target: [0, 30, 42] },
+  { id: 'waterfront', label: '수변 상공', pos: [-145, 66, -125], target: [0, 18, 46] },
+];
+
 export function viewById(id) {
   return VIEWS.find((v) => v.id === id) || null;
 }

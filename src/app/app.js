@@ -14,7 +14,7 @@ import { Section } from './section.js';
 import { Labels, builtinLabels, normalise as normaliseLabels } from './labels.js';
 import { Walker, buildCollider, COLLIDER_LAYERS } from './walk.js';
 import { resolveSeat, adjacentSeat, adjacentRow, seatPose, pickSeat, makeSeatMarker, findSpecialSeat, isSpecial } from './seats.js';
-import { VIEWS, HOME_VIEW, viewById, WALK_STARTS, levelView, sectionView, SECTION_RANGE } from './views.js';
+import { VIEWS, HOME_VIEW, viewById, WALK_STARTS, FLIGHT_STARTS, levelView, sectionView, SECTION_RANGE } from './views.js';
 import { parseUrl, buildUrl, makeUrlWriter } from './urlstate.js';
 import { collectSlots, loadTextures, loadProps } from './assets.js';
 import { installStreetLighting } from './streetLighting.js';
@@ -57,8 +57,9 @@ export class App {
       layers,
       seat: null,
       picked: null,
-      walkStart: init.walkStart || 'deck',
-      fly: false,
+      walkStart: !init.fly && init.walkStart || 'deck',
+      flightStart: init.flightStart || 'plaza',
+      fly: !!init.fly,
       locked: false,
       sectionAxis: init.sectionAxis || 'x',
       sectionPos: init.sectionPos ?? SECTION_RANGE[init.sectionAxis || 'x'].def,
@@ -270,7 +271,8 @@ export class App {
       this.rig.jump(seatPose(seat, { standing: seat.tier === 1 && !s.arenaSeats }));
       this.env.inside = 1;
     } else if (s.mode === 'walk') {
-      this.enterWalk(s.walkStart, true);
+      if (s.fly) this.startFlight(s.flightStart, init.cam);
+      else this.enterWalk(s.walkStart, true);
     } else if (s.mode === 'section') {
       this.section.set(s.sectionAxis, s.sectionPos, s.sectionFlip);
       this.section.enable(true);
@@ -436,6 +438,8 @@ export class App {
 
   setMode(mode) {
     const s = this.s;
+    if (mode === 'fly') return this.startFlight(s.flightStart);
+    if (mode === 'walk' && s.mode === 'walk' && s.fly) return this.startWalk(s.walkStart);
     if (mode === s.mode) {
       if (mode === 'explore') this.goHome();
       return;
@@ -679,10 +683,12 @@ export class App {
   }
 
   enterWalk(startId, instant = false) {
+    this.outdoorFlight = false;
+    this.walker.stop();
+    const token = (this._walkToken = Symbol('walk'));
     if (!instant && (!this.collider || this.colliderDirty)) {
       // building the collision mesh takes a moment: say so, then build on the next frame
       this.ui.toast(tr("걷기 준비 중…"), 4000);
-      const token = (this._walkToken = Symbol('walk'));
       setTimeout(() => {
         if (this._walkToken !== token || this.s.mode !== 'walk') return;
         this.ensureCollider();
@@ -704,11 +710,10 @@ export class App {
     this.env.forceInside = start.inside ? 1 : 0;
     const pose = { kind: 'look', pos: eye.toArray(), target, fov: 72 };
     const arrive = () => {
+      if (this._walkToken !== token || this.s.mode !== 'walk') return;
       this.env.forceInside = null;
-      if (this.s.mode === 'walk') {
-        this.walker.active = true;
-        this.walker._face = null;
-      }
+      this.walker.active = true;
+      this.walker._face = null;
     };
     if (instant) {
       this.rig.jump(pose);
@@ -724,6 +729,21 @@ export class App {
       this.set({ walkStart: id, fly: false });
       this.enterWalk(id);
     }
+  }
+
+  startFlight(id, camera) {
+    const start = FLIGHT_STARTS.find(p => p.id === id) || FLIGHT_STARTS[0];
+    const pose = { pos: start.pos, target: start.target, fov: 68, ...camera, kind: 'look' };
+    this._walkToken = null;
+    this.rig.cancelFlight();
+    if (this.section.active) this.section.enable(false);
+    this.env.forceInside = null;
+    this.outdoorFlight = true;
+    this.set({ mode: 'walk', fly: true, flightStart: start.id, picked: null, level: null, view: null });
+    this.rig.jump(pose);
+    this.walker.startFlight(pose.pos);
+    this.syncModeControls();
+    this.updateUrl();
   }
 
   setFly(on) {
@@ -795,7 +815,10 @@ export class App {
     };
     this.rig.onArrive = () => this.updateUrl();
     this.rig.look.onLockChange = (locked) => this.set({ locked });
-    this.walker.onFlyChange = (fly) => this.set({ fly });
+    this.walker.onFlyChange = fly => {
+      if (!fly && this.outdoorFlight) this.startWalk(this.s.walkStart);
+      else this.set({ fly });
+    };
 
     // click (not drag) on the canvas: pick a seat / lock the pointer in walk mode
     let down = null;
@@ -967,7 +990,11 @@ export class App {
     this.time += dt;
 
     this.resize();
-    if (s.mode === 'walk') this.walker.update(dt);
+    if (s.mode === 'walk') {
+      const wasMoving = this.walker.moving;
+      const moved = this.walker.update(dt);
+      if (s.fly && wasMoving && !moved) this.updateUrl();
+    }
     const camMoved = this.rig.update(dt);
     if (camMoved) this.touch();
     const blending = this.env.update(dt, this.camera);
@@ -1077,7 +1104,7 @@ export class App {
     this.ready = true;
     this.loading.querySelector('#loading-bar').style.width = '100%';
     this.loading.classList.add('done');
-    if (this.s.ui && !preference('guide-seen')) openGuide();
+    if (this.s.ui && !preference('guide-seen')) openGuide(false, this.ui.root.dataset.mode);
     setTimeout(() => this.loading.remove(), 900);
     this.updateUrl();
   }
