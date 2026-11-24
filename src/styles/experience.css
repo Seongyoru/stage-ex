@@ -97,4 +97,9 @@ body.directory-page { background:#111419; color:var(--paper); overflow:auto; col
   .viewer .hud-seatno small { display:inline-block; margin-left:5px; }
 }
 @media(max-width:410px) { .viewer .tabs button { font-size:12px; padding:0 6px; } }
+@media(max-width:480px) {
+  .directory-tools { gap:4px; }
+  .directory-tools button { justify-content:center; width:44px; height:44px; }
+  .directory-tools button span:not(.ico) { display:none; }
+}
 @media(prefers-reduced-motion:reduce) { .venue-feature:hover img { transform:none; } }

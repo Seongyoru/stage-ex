@@ -8,7 +8,8 @@ export function directory() {
   const header = h('header', { class: 'directory-header' },
     h('div', { class: 'wordmark', lang: 'en' }, 'Stage ', h('i', null, 'EX')),
     h('nav', { class: 'directory-tools' },
-      h('button', { type: 'button', onClick: () => openGuide(true) }, icon('help', 16), tr('조작 안내')),
+      h('button', { type: 'button', 'aria-label': tr('조작 안내'), title: tr('조작 안내'), onClick: () => openGuide(true) },
+        icon('help', 18), h('span', null, tr('조작 안내'))),
       languageSelect(code => { location.search = '?lang=' + code; })));
   const list = h('main', { class: 'venue-list' }, h('header', { class: 'directory-title' },
     h('h1', null, tr('공연장 둘러보기')),
