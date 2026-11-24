@@ -1,3 +1,5 @@
+import { language } from './i18n.js';
+import { kArena } from '../venues.js';
 // Shareable state in the URL query.
 //
 //   ?view=<viewpoint id>                       overview, front, eave, flankR, flankL, stageend, aerial, plan,
@@ -70,6 +72,8 @@ const r1 = (v) => Math.round(v * 10) / 10;
 /** Serialise the app state to a query string (only what differs from the defaults). */
 export function buildUrl(s, pose, keep = {}) {
   const q = new URLSearchParams();
+  q.set('venue', kArena.id);
+  q.set('lang', language);
   if (s.mode === 'seat' && s.seat) {
     q.set('view', 'seat');
     q.set('level', s.seat.tier);

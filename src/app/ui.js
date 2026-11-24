@@ -1,3 +1,6 @@
+import { language, languageSelect, tr } from './i18n.js';
+import { openGuide } from './guide.js';
+import { buildUrl } from './urlstate.js';
 // The Korean user interface: top bar with mode tabs, the control panel, the bottom
 // readout (HUD), dialogs, toast, compass and the touch joystick. Plain DOM, no framework.
 import { NORTH_XZ } from '../core/frame.js';
@@ -8,11 +11,11 @@ import { TIERS, TIER_INFO, rowsOf, seatNumbers, seatMetrics, nearestGate, seatKi
 import { VIEWS, WALK_STARTS, LEVEL_INFO, SECTION_RANGE } from './views.js';
 
 const MODES = [
-  { id: 'explore', ko: '둘러보기' },
-  { id: 'seat', ko: '좌석 시야' },
-  { id: 'walk', ko: '걷기' },
-  { id: 'section', ko: '단면' },
-  { id: 'levels', ko: '층별' },
+  { id: 'explore', ko: tr("둘러보기") },
+  { id: 'seat', ko: tr("좌석 시야") },
+  { id: 'walk', ko: tr("걷기") },
+  { id: 'section', ko: tr("단면") },
+  { id: 'levels', ko: tr("층별") },
 ];
 
 const TIER_COLOR = { 1: '#8794a8', 3: '#5b8fd6', 5: '#4fb39a', 7: '#b48ad8' };
@@ -52,9 +55,9 @@ function stepper(label, onStep, onSet) {
     'div',
     { class: 'stepper' },
     h('span', { class: 'stepper-label' }, label),
-    h('button', { type: 'button', 'aria-label': `${label} 이전`, onClick: () => onStep(-1) }, icon('chevLeft', 16)),
+    h('button', { type: 'button', 'aria-label': tr("{0} 이전", label), onClick: () => onStep(-1) }, icon('chevLeft', 16)),
     input,
-    h('button', { type: 'button', 'aria-label': `${label} 다음`, onClick: () => onStep(1) }, icon('chevRight', 16)),
+    h('button', { type: 'button', 'aria-label': tr("{0} 다음", label), onClick: () => onStep(1) }, icon('chevRight', 16)),
   );
   el.input = input;
   return el;
@@ -84,7 +87,7 @@ export class UI {
     // --- top bar ------------------------------------------------------------------------
     r.tabs = h(
       'nav',
-      { class: 'tabs', 'aria-label': '모드' },
+      { class: 'tabs', 'aria-label': tr("모드") },
       MODES.map((m) => {
         const b = h('button', { type: 'button', dataset: { mode: m.id } }, m.ko);
         b.addEventListener('click', () => app.setMode(m.id));
@@ -95,17 +98,22 @@ export class UI {
     r.topbar = h(
       'header',
       { class: 'topbar' },
-      h('button', { type: 'button', class: 'tool menu-btn', title: '패널', 'aria-label': '패널 열기 / 닫기', onClick: () => this.togglePanel() }, icon('menu')),
-      h('div', { class: 'brand', onClick: () => app.goHome(), title: '전경으로' }, h('b', null, 'K-Arena Yokohama'), h('span', null, '디지털 트윈')),
+      h('button', { type: 'button', class: 'tool menu-btn', title: tr("패널"), 'aria-label': tr("패널 열기 / 닫기"), onClick: () => this.togglePanel() }, icon('menu')),
+      h('a', { class: 'venues-home', href: '?lang=' + language, title: tr('공연장 목록'), 'aria-label': tr('공연장 목록') }, 'Stage ', h('i', null, 'EX')),
+      h('button', { type: 'button', class: 'brand', onClick: () => app.goHome(), title: tr("전경으로") }, h('b', null, 'K-Arena Yokohama')),
       r.tabs,
       h(
         'div',
         { class: 'tools' },
-        tool('info', '시설 개요', () => this.openDialog('facts')),
-        tool('book', '출처 · 안내', () => this.openDialog('about')),
-        tool('share', '현재 화면 링크 복사', () => app.share()),
-        tool('help', '조작법 · 단축키', () => this.openDialog('help')),
-        tool('full', '전체 화면', () => app.toggleFullscreen()),
+        tool('info', tr("시설 개요"), () => this.openDialog('facts')),
+        tool('book', tr("출처 · 안내"), () => this.openDialog('about')),
+        tool('share', tr("현재 화면 링크 복사"), () => app.share()),
+        tool('help', tr("조작법 · 단축키"), () => this.openDialog('help')),
+        tool('full', tr("전체 화면"), () => app.toggleFullscreen()),
+        languageSelect(code => {
+          const params = new URLSearchParams(buildUrl(app.s, app.rig.pose(), { q: app.s.quality, lang: code }));
+          location.search = params.toString();
+        }),
       ),
     );
 
@@ -122,8 +130,8 @@ export class UI {
     r.status = h('div', { class: 'status' });
     r.panel = h(
       'aside',
-      { class: 'panel', 'aria-label': '조작 패널' },
-      h('div', { class: 'panel-scroll' }, Object.values(r.panes), h('details', { class: 'group', open: !narrow }, h('summary', null, '장면'), r.scene), h('details', { class: 'group' }, h('summary', null, '표시 레이어'), r.layers), r.status),
+      { class: 'panel', 'aria-label': tr("조작 패널") },
+      h('div', { class: 'panel-scroll' }, Object.values(r.panes), h('details', { class: 'group', open: !narrow }, h('summary', null, tr("장면")), r.scene), h('details', { class: 'group' }, h('summary', null, tr("표시 레이어")), r.layers), r.status),
     );
     if (narrow) this.root.classList.add('panel-closed');
 
@@ -131,10 +139,10 @@ export class UI {
     r.hud = h('div', { class: 'hud', 'aria-live': 'polite' });
     r.toast = h('div', { class: 'toast', role: 'status' });
     r.needle = h('div', { class: 'needle' }, h('b', null, 'N'));
-    r.compass = h('button', { type: 'button', class: 'compass', title: '북쪽 방향 · 눌러서 전경으로', onClick: () => app.goHome() }, r.needle);
+    r.compass = h('button', { type: 'button', class: 'compass', title: tr("북쪽 방향 · 눌러서 전경으로"), onClick: () => app.goHome() }, r.needle);
     r.joy = this.buildJoystick();
-    r.restore = h('button', { type: 'button', class: 'restore', title: 'UI 표시 (U)', onClick: () => app.set({ ui: true }) }, icon('eye'));
-    r.credit = h('button', { type: 'button', class: 'credit', title: '출처 · 안내', onClick: () => this.openDialog('about') });
+    r.restore = h('button', { type: 'button', class: 'restore', title: tr("UI 표시 (U)"), onClick: () => app.set({ ui: true }) }, icon('eye'));
+    r.credit = h('button', { type: 'button', class: 'credit', title: tr("출처 · 안내"), onClick: () => this.openDialog('about') });
     r.dialog = this.buildDialog();
 
     this.root.append(r.topbar, r.panel, r.hud, r.credit, r.compass, r.joy, r.toast, r.restore, r.dialog);
@@ -156,7 +164,7 @@ export class UI {
           return b;
         }),
       );
-    return h('section', { class: 'pane', dataset: { pane: 'explore' } }, h('h2', null, '외부 시점'), grid('out'), h('h2', null, '내부 시점'), grid('in'), h('p', { class: 'hint' }, '드래그로 회전, 휠로 확대합니다. 건물 안이나 지붕을 연 상태에서 좌석을 클릭하면 그 자리의 시야를 볼 수 있습니다.'));
+    return h('section', { class: 'pane', dataset: { pane: 'explore' } }, h('h2', null, tr("외부 시점")), grid('out'), h('h2', null, tr("내부 시점")), grid('in'), h('p', { class: 'hint' }, tr("드래그로 회전, 휠로 확대합니다. 건물 안이나 지붕을 연 상태에서 좌석을 클릭하면 그 자리의 시야를 볼 수 있습니다.")));
   }
 
   // --- seat pane --------------------------------------------------------------------------
@@ -169,21 +177,21 @@ export class UI {
       (t) => app.pickSeatLoose(t, null, null),
       'tiers',
     );
-    r.rowStep = stepper('열', (d) => app.stepRow(d), (v) => app.pickSeatLoose(this.seatDraft().tier, v, this.seatDraft().num));
-    r.numStep = stepper('번', (d) => app.stepSeat(d), (v) => app.pickSeatLoose(this.seatDraft().tier, this.seatDraft().row, v));
+    r.rowStep = stepper(tr("열"), (d) => app.stepRow(d), (v) => app.pickSeatLoose(this.seatDraft().tier, v, this.seatDraft().num));
+    r.numStep = stepper(tr("번"), (d) => app.stepSeat(d), (v) => app.pickSeatLoose(this.seatDraft().tier, this.seatDraft().row, v));
     r.seatRange = h('p', { class: 'hint tight' });
-    r.map = h('canvas', { class: 'seatmap', width: 560, height: 400, title: '좌석 배치도 — 눌러서 좌석 선택' });
+    r.map = h('canvas', { class: 'seatmap', width: 560, height: 400, title: tr("좌석 배치도 — 눌러서 좌석 선택") });
     r.map.addEventListener('click', (e) => this.onMapClick(e));
-    r.sitBtn = h('button', { type: 'button', class: 'primary', onClick: () => app.sitCurrent() }, '이 좌석에서 보기');
+    r.sitBtn = h('button', { type: 'button', class: 'primary', onClick: () => app.sitCurrent() }, tr("이 좌석에서 보기"));
     return h(
       'section',
       { class: 'pane', dataset: { pane: 'seat' } },
-      h('h2', null, '좌석 선택'),
+      h('h2', null, tr("좌석 선택")),
       r.tierSeg,
       h('div', { class: 'row2' }, r.rowStep, r.numStep),
       r.seatRange,
-      h('div', { class: 'seatmap-wrap' }, r.map, h('span', { class: 'seatmap-stage' }, '무대')),
-      h('p', { class: 'hint' }, '배치도나 3D 화면의 좌석을 눌러도 선택됩니다. 좌석 번호는 공식 좌석도(LEVEL / 列 / 番)와 같습니다.'),
+      h('div', { class: 'seatmap-wrap' }, r.map, h('span', { class: 'seatmap-stage' }, tr("무대"))),
+      h('p', { class: 'hint' }, tr("배치도나 3D 화면의 좌석을 눌러도 선택됩니다. 좌석 번호는 공식 좌석도(LEVEL / 列 / 番)와 같습니다.")),
     );
   }
 
@@ -262,12 +270,12 @@ export class UI {
     const app = this.app;
     const r = this.refs;
     r.walkButtons = new Map();
-    r.flySwitch = switchRow('비행 모드', false, (on) => app.setFly(on), '벽을 통과해 자유롭게 이동 (F)');
+    r.flySwitch = switchRow(tr("비행 모드"), false, (on) => app.setFly(on), tr("벽을 통과해 자유롭게 이동 (F)"));
     r.walkInfo = h('p', { class: 'hint tight' });
     return h(
       'section',
       { class: 'pane', dataset: { pane: 'walk' } },
-      h('h2', null, '출발 지점'),
+      h('h2', null, tr("출발 지점")),
       h(
         'div',
         { class: 'list' },
@@ -278,7 +286,7 @@ export class UI {
         }),
       ),
       r.flySwitch,
-      h('p', { class: 'hint' }, h('b', null, 'W A S D'), ' 이동 · ', h('b', null, 'Shift'), ' 달리기 · ', h('b', null, 'Space'), ' 점프. 화면을 클릭하면 마우스로 시선을 움직입니다. 터치 기기에서는 왼쪽 아래 조이스틱을 사용하세요.'),
+      h('p', { class: 'hint' }, h('b', null, 'W A S D'), tr(" 이동 · "), h('b', null, 'Shift'), tr(" 달리기 · "), h('b', null, 'Space'), tr(" 점프. 화면을 클릭하면 마우스로 시선을 움직입니다. 터치 기기에서는 왼쪽 아래 조이스틱을 사용하세요.")),
       r.walkInfo,
     );
   }
@@ -289,26 +297,26 @@ export class UI {
     const r = this.refs;
     r.axisSeg = segmented(
       [
-        { value: 'x', label: '종단면', title: '홀 축 방향으로 자르기' },
-        { value: 'z', label: '횡단면', title: '홀 축에 직각으로 자르기' },
-        { value: 'y', label: '평면', title: '수평으로 자르기' },
+        { value: 'x', label: tr("종단면"), title: tr("홀 축 방향으로 자르기") },
+        { value: 'z', label: tr("횡단면"), title: tr("홀 축에 직각으로 자르기") },
+        { value: 'y', label: tr("평면"), title: tr("수평으로 자르기") },
       ],
       'x',
       (axis) => app.setSection({ axis }),
     );
-    r.secRange = h('input', { type: 'range', class: 'range', 'aria-label': '절단 위치' });
+    r.secRange = h('input', { type: 'range', class: 'range', 'aria-label': tr("절단 위치") });
     r.secRange.addEventListener('input', () => app.setSection({ pos: Number(r.secRange.value) }, { live: true }));
     r.secValue = h('output', { class: 'range-value' });
-    r.flipSwitch = switchRow('반대쪽 보기', false, (on) => app.setSection({ flip: on }));
+    r.flipSwitch = switchRow(tr("반대쪽 보기"), false, (on) => app.setSection({ flip: on }));
     return h(
       'section',
       { class: 'pane', dataset: { pane: 'section' } },
-      h('h2', null, '절단면'),
+      h('h2', null, tr("절단면")),
       r.axisSeg,
       h('div', { class: 'range-row' }, r.secRange, r.secValue),
       r.flipSwitch,
-      h('button', { type: 'button', class: 'ghost-btn', onClick: () => app.faceSection() }, '절단면 정면에서 보기'),
-      h('p', { class: 'hint' }, '절단면을 움직이며 스탠드 단면, 층 구성, 지붕 트러스를 확인할 수 있습니다. 햇빛은 잘린 면 안으로 들어옵니다.'),
+      h('button', { type: 'button', class: 'ghost-btn', onClick: () => app.faceSection() }, tr("절단면 정면에서 보기")),
+      h('p', { class: 'hint' }, tr("절단면을 움직이며 스탠드 단면, 층 구성, 지붕 트러스를 확인할 수 있습니다. 햇빛은 잘린 면 안으로 들어옵니다.")),
     );
   }
 
@@ -317,11 +325,11 @@ export class UI {
     const app = this.app;
     const r = this.refs;
     r.levelButtons = new Map();
-    r.ghostSwitch = switchRow('다른 층을 반투명으로', true, (on) => app.set({ levelGhost: on }), '끄면 완전히 숨깁니다');
+    r.ghostSwitch = switchRow(tr("다른 층을 반투명으로"), true, (on) => app.set({ levelGhost: on }), tr("끄면 완전히 숨깁니다"));
     return h(
       'section',
       { class: 'pane', dataset: { pane: 'levels' } },
-      h('h2', null, '층 선택'),
+      h('h2', null, tr("층 선택")),
       h(
         'div',
         { class: 'list levels' },
@@ -341,31 +349,31 @@ export class UI {
     const r = this.refs;
     r.daySeg = segmented(
       [
-        { value: false, label: h('span', null, icon('sun', 15), ' 낮') },
-        { value: true, label: h('span', null, icon('moon', 15), ' 밤') },
+        { value: false, label: h('span', null, icon('sun', 15), tr(" 낮")) },
+        { value: true, label: h('span', null, icon('moon', 15), tr(" 밤")) },
       ],
       false,
       (night) => app.set({ night }),
     );
     r.sw = {
-      show: switchRow('공연 조명', false, (on) => app.set({ show: on }), '객석등을 내리고 쇼 조명을 켭니다'),
-      telescopic: switchRow('가동식 스탠드 펼침', true, (on) => app.set({ telescopic: on }), 'LOWER STAND 1–11열 (끄면 수납)'),
-      arenaSeats: switchRow('아레나 좌석', true, (on) => app.set({ arenaSeats: on }), '끄면 스탠딩 구성'),
-      stageKit: switchRow('무대 · 연출 기재', true, (on) => app.set({ stageKit: on })),
-      curtains: switchRow('음향 커튼 닫기', true, (on) => app.set({ curtains: on }), '끄면 커튼을 묶어 반사벽을 드러냅니다'),
-      roofOpen: switchRow('지붕 열기', false, (on) => app.set({ roofOpen: on })),
-      labels: switchRow('라벨', true, (on) => app.set({ labels: on })),
-      aerial: switchRow('항공사진 지면', false, (on) => app.set({ aerial: on }), 'PLATEAU-Ortho 타일을 MLIT 서버에서 불러옵니다'),
+      show: switchRow(tr("공연 조명"), false, (on) => app.set({ show: on }), tr("객석등을 내리고 쇼 조명을 켭니다")),
+      telescopic: switchRow(tr("가동식 스탠드 펼침"), true, (on) => app.set({ telescopic: on }), tr("LOWER STAND 1–11열 (끄면 수납)")),
+      arenaSeats: switchRow(tr("아레나 좌석"), true, (on) => app.set({ arenaSeats: on }), tr("끄면 스탠딩 구성")),
+      stageKit: switchRow(tr("무대 · 연출 기재"), true, (on) => app.set({ stageKit: on })),
+      curtains: switchRow(tr("음향 커튼 닫기"), true, (on) => app.set({ curtains: on }), tr("끄면 커튼을 묶어 반사벽을 드러냅니다")),
+      roofOpen: switchRow(tr("지붕 열기"), false, (on) => app.set({ roofOpen: on })),
+      labels: switchRow(tr("라벨"), true, (on) => app.set({ labels: on })),
+      aerial: switchRow(tr("항공사진 지면"), false, (on) => app.set({ aerial: on }), tr("PLATEAU-Ortho 타일을 MLIT 서버에서 불러옵니다")),
     };
     r.qualitySeg = segmented(
       [
-        { value: 'high', label: '높음' },
-        { value: 'low', label: '낮음' },
+        { value: 'high', label: tr("높음") },
+        { value: 'low', label: tr("낮음") },
       ],
       'high',
       (q) => app.setQuality(q),
     );
-    return h('div', { class: 'scene' }, r.daySeg, Object.values(r.sw), h('div', { class: 'inline' }, h('span', null, '품질'), r.qualitySeg));
+    return h('div', { class: 'scene' }, r.daySeg, Object.values(r.sw), h('div', { class: 'inline' }, h('span', null, tr("품질")), r.qualitySeg));
   }
 
   buildLayerList() {
@@ -380,7 +388,7 @@ export class UI {
       this.refs.layerInputs.set(l.id, input);
       list.append(h('label', { class: 'check' }, input, h('i', { 'aria-hidden': 'true' }), h('span', null, l.ko)));
     }
-    if (!list.firstChild) list.append(h('p', { class: 'hint' }, '불러온 모델이 없습니다.'));
+    if (!list.firstChild) list.append(h('p', { class: 'hint' }, tr("불러온 모델이 없습니다.")));
   }
 
   // --- joystick (touch) -------------------------------------------------------------------
@@ -426,7 +434,7 @@ export class UI {
     r.dialogTitle = h('h2', null, '');
     r.dialogBody = h('div', { class: 'dialog-body' });
     const close = () => this.closeDialog();
-    const box = h('div', { class: 'dialog-box', role: 'dialog', 'aria-modal': 'true' }, h('header', null, r.dialogTitle, h('button', { type: 'button', class: 'tool', 'aria-label': '닫기', onClick: close }, icon('close'))), r.dialogBody);
+    const box = h('div', { class: 'dialog-box', role: 'dialog', 'aria-modal': 'true' }, h('header', null, r.dialogTitle, h('button', { type: 'button', class: 'tool', 'aria-label': tr("닫기"), onClick: close }, icon('close'))), r.dialogBody);
     const el = h('div', { class: 'dialog', hidden: true }, box);
     el.addEventListener('pointerdown', (e) => {
       if (e.target === el) close();
@@ -438,13 +446,16 @@ export class UI {
     const r = this.refs;
     const app = this.app;
     const map = {
-      facts: ['시설 개요', () => factsContent()],
-      about: ['출처 · 안내', () => aboutContent(app.attribution, app.failedModules())],
-      help: ['조작법 · 단축키', () => helpContent()],
+      facts: [tr("시설 개요"), () => factsContent()],
+      about: [tr("출처 · 안내"), () => aboutContent(app.attribution, app.failedModules())],
+      help: [tr("조작법 · 단축키"), () => helpContent()],
     };
     const [title, make] = map[name] || map.facts;
     r.dialogTitle.textContent = title;
     clear(r.dialogBody).append(make());
+    if (name === 'help') r.dialogBody.prepend(h('button', {
+      type: 'button', class: 'ghost-btn', onClick: () => { this.closeDialog(); openGuide(); },
+    }, tr('조작 안내 다시 보기')));
     r.dialog.hidden = false;
     r.dialogBody.scrollTop = 0;
     this.dialogOpen = name;
@@ -510,7 +521,7 @@ export class UI {
     const special = isSpecial(seat);
     r.rowStep.hidden = r.numStep.hidden = special;
     if (special) {
-      r.seatRange.textContent = `${seatTitle(seat)} — 번호 체계 밖의 좌석입니다. LEVEL을 고르면 일반 좌석으로 돌아갑니다.`;
+      r.seatRange.textContent = tr("{0} — 번호 체계 밖의 좌석입니다. LEVEL을 고르면 일반 좌석으로 돌아갑니다.", seatTitle(seat));
       this.drawSeatMap();
       return;
     }
@@ -519,7 +530,7 @@ export class UI {
     const rows = rowsOf(d.tier);
     const nums = seatNumbers(d.tier, d.row);
     const ranges = (rows.find((x) => x.row === d.row)?.ranges || []).map(([a, b]) => `${a}–${b}`);
-    r.seatRange.textContent = `열 ${rows[0].row}–${rows[rows.length - 1].row} · 이 열의 좌석 ${compact(ranges)} (${nums.length}석)`;
+    r.seatRange.textContent = tr("열 {0}–{1} · 이 열의 좌석 {2} ({3}석)", rows[0].row, rows[rows.length - 1].row, compact(ranges), nums.length);
     if (!this.refs.panes.seat.hidden || seat) this.drawSeatMap();
   }
 
@@ -532,7 +543,7 @@ export class UI {
     r.secRange.max = range.max;
     r.secRange.step = range.step;
     r.secRange.value = s.sectionPos;
-    const unit = s.sectionAxis === 'x' ? '중심축에서' : s.sectionAxis === 'z' ? '무대 앞에서' : '아레나 바닥 +';
+    const unit = s.sectionAxis === 'x' ? tr("중심축에서") : s.sectionAxis === 'z' ? tr("무대 앞에서") : tr("아레나 바닥 +");
     r.secValue.textContent = `${unit} ${fmt(s.sectionPos, 1)} m`;
     r.flipSwitch.input.checked = !!s.sectionFlip;
     r.flipSwitch.hidden = s.sectionAxis === 'y';
@@ -550,50 +561,50 @@ export class UI {
       const m = seatMetrics(seat, standing ? 1.6 : 1.15);
       const gate = nearestGate(seat);
       const clear = app.sightline(seat);
-      const side = Math.abs(m.offAxis) < 1.5 ? '무대 정면' : `정면에서 ${m.offAxis > 0 ? '오른쪽' : '왼쪽'} ${fmt(Math.abs(m.offAxis), 0)}°`;
+      const side = Math.abs(m.offAxis) < 1.5 ? tr("무대 정면") : tr("정면에서 {0} {1}°", m.offAxis > 0 ? tr("오른쪽") : tr("왼쪽"), fmt(Math.abs(m.offAxis), 0));
       const nav = (name, label, fn, disabled) => h('button', { type: 'button', class: 'nav', title: label, 'aria-label': label, disabled: disabled || null, onClick: fn }, icon(name, 18));
       hud.classList.add('hud-seat');
       hud.append(
         h(
           'div',
           { class: 'hud-main' },
-          h('div', { class: 'hud-title' }, h('span', { class: 'tier-dot', style: { background: TIER_COLOR[seat.tier] } }), seatTitle(seat), h('small', null, tierKo(seat))),
-          seat.kind === 'companion'
-            ? h('div', { class: 'hud-seatno' }, h('b', null, `${seat.num}`), '번', h('small', null, seatKindKo(seat)))
-            : h('div', { class: 'hud-seatno' }, h('b', null, `${seat.row}`), '열 ', h('b', null, `${seat.num}`), '번', h('small', null, standing ? '스탠딩 시야' : seatKindKo(seat))),
+          h('div', { class: 'hud-title' }, h('span', { class: 'tier-dot', style: { background: TIER_COLOR[seat.tier] } }), seatTitle(seat), language === 'en' ? null : h('small', null, tierKo(seat))),
+          h('div', { class: 'hud-seatno' }, h('b', null, seat.kind === 'companion'
+            ? tr('{0}번', seat.num) : tr('{0}열 {1}번', seat.row, seat.num)),
+            h('small', null, standing ? tr("스탠딩 시야") : seatKindKo(seat))),
           h(
             'dl',
             { class: 'hud-facts' },
-            h('div', null, h('dt', null, '무대까지'), h('dd', null, `${fmt(m.horizontal, 1)} m`)),
-            h('div', null, h('dt', null, '시선 거리'), h('dd', null, `${fmt(m.sight, 1)} m`)),
-            h('div', null, h('dt', null, '눈높이'), h('dd', null, `+${fmt(m.eyeY, 1)} m`)),
-            h('div', null, h('dt', null, '내려다보는 각'), h('dd', null, `${fmt(Math.max(m.down, 0), 0)}°`)),
-            h('div', null, h('dt', null, '방향'), h('dd', null, side)),
-            gate ? h('div', null, h('dt', null, '가까운 게이트'), h('dd', null, `GATE ${gate.id}`)) : null,
-            clear === null ? null : h('div', { title: '모델의 난간 · 스탠드 · 갤러리 기준. 관객과 공연 기재는 포함하지 않습니다.' }, h('dt', null, '무대 앞 시야선'), h('dd', { class: clear ? '' : 'warn-text' }, clear ? '트임' : '구조물에 걸림')),
+            h('div', null, h('dt', null, tr("무대까지")), h('dd', null, `${fmt(m.horizontal, 1)} m`)),
+            h('div', null, h('dt', null, tr("시선 거리")), h('dd', null, `${fmt(m.sight, 1)} m`)),
+            h('div', null, h('dt', null, tr("눈높이")), h('dd', null, `+${fmt(m.eyeY, 1)} m`)),
+            h('div', null, h('dt', null, tr("내려다보는 각")), h('dd', null, `${fmt(Math.max(m.down, 0), 0)}°`)),
+            h('div', null, h('dt', null, tr("방향")), h('dd', null, side)),
+            gate ? h('div', null, h('dt', null, tr("가까운 게이트")), h('dd', null, `GATE ${gate.id}`)) : null,
+            clear === null ? null : h('div', { title: tr("모델의 난간 · 스탠드 · 갤러리 기준. 관객과 공연 기재는 포함하지 않습니다.") }, h('dt', null, tr("무대 앞 시야선")), h('dd', { class: clear ? '' : 'warn-text' }, clear ? tr("트임") : tr("구조물에 걸림"))),
           ),
         ),
         h(
           'div',
           { class: 'hud-nav' },
-          nav('chevUp', '앞 열 (↑)', () => app.stepRow(-1)),
-          h('div', null, nav('chevLeft', '왼쪽 좌석 (←)', () => app.stepSeat(-1)), h('button', { type: 'button', class: 'nav centre', title: '무대 쪽 보기', onClick: () => app.lookAtStage() }, '무대'), nav('chevRight', '오른쪽 좌석 (→)', () => app.stepSeat(1))),
-          nav('chevDown', '뒷 열 (↓)', () => app.stepRow(1)),
+          nav('chevUp', tr("앞 열 (↑)"), () => app.stepRow(-1)),
+          h('div', null, nav('chevLeft', tr("왼쪽 좌석 (←)"), () => app.stepSeat(-1)), h('button', { type: 'button', class: 'nav centre', title: tr("무대 쪽 보기"), onClick: () => app.lookAtStage() }, tr("무대")), nav('chevRight', tr("오른쪽 좌석 (→)"), () => app.stepSeat(1))),
+          nav('chevDown', tr("뒷 열 (↓)"), () => app.stepRow(1)),
         ),
       );
     } else if (s.mode === 'walk') {
       hud.classList.add('hud-hint');
       append(hud, [
-        s.fly ? h('b', null, '비행 모드 · ') : null,
-        s.locked ? 'WASD 이동 · Shift 달리기 · Space 점프 · F 비행 · Esc 마우스 해제' : '화면을 클릭하면 마우스로 시선을 움직입니다 · WASD 이동 · F 비행',
+        s.fly ? h('b', null, tr("비행 모드 · ")) : null,
+        s.locked ? tr("WASD 이동 · Shift 달리기 · Space 점프 · F 비행 · Esc 마우스 해제") : tr("화면을 클릭하면 마우스로 시선을 움직입니다 · WASD 이동 · F 비행"),
       ]);
     } else if (s.mode === 'explore' && s.picked) {
       const seat = s.picked;
       hud.classList.add('hud-pick');
       hud.append(
-        h('span', null, h('span', { class: 'tier-dot', style: { background: TIER_COLOR[seat.tier] } }), `${seatTitle(seat)} · ${seat.row}열 ${seat.num}번`),
-        h('button', { type: 'button', class: 'primary small', onClick: () => app.sit(seat) }, '이 좌석에서 보기'),
-        h('button', { type: 'button', class: 'tool', 'aria-label': '선택 해제', onClick: () => app.clearPick() }, icon('close', 16)),
+        h('span', null, h('span', { class: 'tier-dot', style: { background: TIER_COLOR[seat.tier] } }), tr("{0} · {1}열 {2}번", seatTitle(seat), seat.row, seat.num)),
+        h('button', { type: 'button', class: 'primary small', onClick: () => app.sit(seat) }, tr("이 좌석에서 보기")),
+        h('button', { type: 'button', class: 'tool', 'aria-label': tr("선택 해제"), onClick: () => app.clearPick() }, icon('close', 16)),
       );
     } else if (s.mode === 'levels' && s.level) {
       const info = LEVEL_INFO.find((l) => l.level === s.level);
@@ -605,8 +616,8 @@ export class UI {
 
   setStatus(failed, missing) {
     const el = clear(this.refs.status);
-    if (failed.length) el.append(h('p', { class: 'warn' }, icon('warn', 15), ` 불러오지 못한 부분: ${failed.join(', ')}`));
-    if (missing.length) el.append(h('p', { class: 'hint tight' }, `아직 없는 부분: ${missing.join(', ')}`));
+    if (failed.length) el.append(h('p', { class: 'warn' }, icon('warn', 15), tr(" 불러오지 못한 부분: {0}", failed.join(', '))));
+    if (missing.length) el.append(h('p', { class: 'hint tight' }, tr("아직 없는 부분: {0}", missing.join(', '))));
   }
 
   /** Map-data credit line (always), plus the aerial-photo credit while that mode is on. */

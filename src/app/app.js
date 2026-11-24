@@ -1,3 +1,5 @@
+import { language, preference, tr } from './i18n.js';
+import { openGuide } from './guide.js';
 // The application: scene assembly, render loop, modes and state.
 import * as THREE from 'three';
 import { MODULES, planModules, buildAll, buildModule, moduleName } from '../modules.js';
@@ -14,7 +16,8 @@ import { Walker, buildCollider, COLLIDER_LAYERS } from './walk.js';
 import { resolveSeat, adjacentSeat, adjacentRow, seatPose, pickSeat, makeSeatMarker, findSpecialSeat, isSpecial } from './seats.js';
 import { VIEWS, HOME_VIEW, viewById, WALK_STARTS, levelView, sectionView, SECTION_RANGE } from './views.js';
 import { parseUrl, buildUrl, makeUrlWriter } from './urlstate.js';
-import { loadTextures, loadProps } from './assets.js';
+import { collectSlots, loadTextures, loadProps } from './assets.js';
+import { installStreetLighting } from './streetLighting.js';
 import { UI } from './ui.js';
 
 const clamp = THREE.MathUtils.clamp;
@@ -130,14 +133,14 @@ export class App {
       yieldFrame,
       onProgress: (i, total, id, phase) => {
         bar.style.width = `${Math.round((i / (total + 1)) * 100)}%`;
-        if (phase === 'start') step.textContent = `${moduleName(id)} 구성 중… (${i + 1}/${total})`;
+        if (phase === 'start') step.textContent = tr("{0} 구성 중… ({1}/{2})", moduleName(id), i + 1, total);
       },
       onBuilt: (result) => {
         this.adoptModule(result);
-        if (result.status === 'failed') warn.textContent = `불러오지 못한 부분: ${this.failedModules().join(', ')}`;
+        if (result.status === 'failed') warn.textContent = tr("불러오지 못한 부분: {0}", this.failedModules().join(', '));
       },
     });
-    step.textContent = '장면 준비 중…';
+    step.textContent = tr("장면 준비 중…");
     bar.style.width = '96%';
     await yieldFrame();
     if (s.quality === 'high' && s.mode !== 'walk') {
@@ -177,6 +180,7 @@ export class App {
         if (!res) return;
         if (res.types.length) {
           this.model.add(res.group);
+          this.lampPower = installStreetLighting(res.group, collectSlots(this.propSlots), this.s.night);
           this.visibility.add(res.group);
           // procedural stand-ins of the same prop type make way for the generated model
           const loaded = new Set(res.types);
@@ -301,6 +305,7 @@ export class App {
     const s = this.s;
     const has = (k) => changed.includes(k);
     this.touch();
+    if (has('night') && this.lampPower) this.lampPower.value = Number(s.night);
     if (has('night') || has('show') || has('roofOpen') || has('mode') || has('layers')) {
       this.env.setState({ night: s.night, show: s.show, open: this.daylightInside() });
       this.gfx.setBloom(s.night || s.show, this.scene, this.camera);
@@ -403,7 +408,7 @@ export class App {
     const keep = {};
     if (this.init.flags.q) keep.q = this.init.flags.q;
     const url = location.origin + location.pathname + buildUrl(this.s, this.rig.pose(), keep);
-    const done = () => this.ui.toast('현재 화면의 링크를 복사했습니다');
+    const done = () => this.ui.toast(tr("현재 화면의 링크를 복사했습니다"));
     if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(done, () => this.ui.toast(url, 6000));
     else this.ui.toast(url, 6000);
   }
@@ -585,19 +590,19 @@ export class App {
   stepSeat(dir) {
     const seat = this.s.seat;
     if (!seat) return;
-    if (isSpecial(seat)) return void this.ui.toast('이 좌석은 3D 화면에서 직접 선택해 주세요', 1600);
+    if (isSpecial(seat)) return void this.ui.toast(tr("이 좌석은 3D 화면에서 직접 선택해 주세요"), 1600);
     const next = adjacentSeat(seat, dir);
     if (next) this.sit(next, { duration: 0.28 });
-    else this.ui.toast(dir < 0 ? '이 열의 첫 좌석입니다' : '이 열의 마지막 좌석입니다', 1400);
+    else this.ui.toast(dir < 0 ? tr("이 열의 첫 좌석입니다") : tr("이 열의 마지막 좌석입니다"), 1400);
   }
 
   stepRow(dir) {
     const seat = this.s.seat;
     if (!seat) return;
-    if (isSpecial(seat)) return void this.ui.toast('이 좌석은 3D 화면에서 직접 선택해 주세요', 1600);
+    if (isSpecial(seat)) return void this.ui.toast(tr("이 좌석은 3D 화면에서 직접 선택해 주세요"), 1600);
     const next = adjacentRow(seat, dir);
     if (next) this.sit(next, { duration: 0.32 });
-    else this.ui.toast(dir < 0 ? '맨 앞 열입니다' : '맨 뒷 열입니다', 1400);
+    else this.ui.toast(dir < 0 ? tr("맨 앞 열입니다") : tr("맨 뒷 열입니다"), 1400);
   }
 
   lookAtStage() {
@@ -669,19 +674,19 @@ export class App {
     this.walker.setCollider(this.collider);
     const ms = Math.round(performance.now() - t0);
     this.colliderInfo = this.collider ? { triangles: this.collider.triangles, ms } : null;
-    this.ui.setWalkInfo(this.collider ? `충돌 메시 ${this.collider.triangles.toLocaleString('ko-KR')} 삼각형` : '충돌 메시가 없어 비행 모드로 이동합니다.');
+    this.ui.setWalkInfo(this.collider ? tr("충돌 메시 {0} 삼각형", this.collider.triangles.toLocaleString(language)) : tr("충돌 메시가 없어 비행 모드로 이동합니다."));
     return this.collider;
   }
 
   enterWalk(startId, instant = false) {
     if (!instant && (!this.collider || this.colliderDirty)) {
       // building the collision mesh takes a moment: say so, then build on the next frame
-      this.ui.toast('걷기 준비 중…', 4000);
+      this.ui.toast(tr("걷기 준비 중…"), 4000);
       const token = (this._walkToken = Symbol('walk'));
       setTimeout(() => {
         if (this._walkToken !== token || this.s.mode !== 'walk') return;
         this.ensureCollider();
-        this.ui.toast('WASD로 이동 · 화면을 클릭하면 마우스로 시선 이동', 3200);
+        this.ui.toast(tr("WASD로 이동 · 화면을 클릭하면 마우스로 시선 이동"), 3200);
         this.enterWalk(startId);
       }, 60);
       return;
@@ -692,7 +697,7 @@ export class App {
     if (!this.collider || !this.walker.grounded) {
       // no floor under the start point (that part of the model is missing): do not fall forever
       this.walker.toggleFly(true);
-      this.ui.toast('이 지점의 바닥 모델이 없어 비행 모드로 시작합니다', 3200);
+      this.ui.toast(tr("이 지점의 바닥 모델이 없어 비행 모드로 시작합니다"), 3200);
     }
     const target = [eye.x + start.face[0] * 20, eye.y, eye.z + start.face[1] * 20];
     this.walker.active = false; // hold still during the flight
@@ -1072,6 +1077,7 @@ export class App {
     this.ready = true;
     this.loading.querySelector('#loading-bar').style.width = '100%';
     this.loading.classList.add('done');
+    if (this.s.ui && !preference('guide-seen')) openGuide();
     setTimeout(() => this.loading.remove(), 900);
     this.updateUrl();
   }

@@ -1,3 +1,4 @@
+import { language, tr } from './i18n.js';
 // Projected HTML labels with decluttering.
 //
 // Built-in labels: the parts of the arena (tiers, stage), entrances, gates, levels and the
@@ -95,8 +96,8 @@ export function builtinLabels() {
     else if (/^K Tower/.test(n.name)) add({ id: 'ktower', text: 'K Tower Yokohama', sub: 'Kタワー横浜', pos: [x, h + 6, z], scope: 'out', min: 60, max: 2000, prio: 8, kind: 'building' });
     else if (/Takashima/.test(n.name)) {
       const mid = ring[Math.floor(ring.length / 2)];
-      add({ id: 'suisaisen', text: '高島水際線デッキ', sub: '다카시마 수변선 덱 (보행교)', pos: [mid[0], 9.5, mid[1]], scope: 'out', min: 30, max: 520, prio: 5, kind: 'bridge' });
-    } else if (/^Arena Tent/.test(n.name)) add({ id: 'arenatent', text: 'Arena Tent', sub: '굿즈 판매', pos: [x, h + 2.5, z], scope: 'out', min: 15, max: 230, prio: 3, kind: 'place' });
+      add({ id: 'suisaisen', text: '高島水際線デッキ', sub: tr("다카시마 수변선 덱 (보행교)"), pos: [mid[0], 9.5, mid[1]], scope: 'out', min: 30, max: 520, prio: 5, kind: 'bridge' });
+    } else if (/^Arena Tent/.test(n.name)) add({ id: 'arenatent', text: 'Arena Tent', sub: tr("굿즈 판매"), pos: [x, h + 2.5, z], scope: 'out', min: 15, max: 230, prio: 3, kind: 'place' });
     else if (/^Bay Tent/.test(n.name)) add({ id: 'baytent', text: 'Bay Tent', sub: 'Music Terrace Stage', pos: [x, h + 2.5, z], scope: 'out', min: 15, max: 230, prio: 3, kind: 'place' });
   }
   const site = SPEC.site || {};
@@ -110,15 +111,15 @@ export function builtinLabels() {
     const [x, z] = lonLatToWorld(...site[key]);
     add({ id, text, sub, pos: [x, 6, z], scope: 'out', min: 15, max: 330, prio: 4, kind: 'place' });
   };
-  gate('northgate', 'northGateStairFoot', 'North Gate', '노스 게이트');
-  gate('southgate', 'southGateStairFoot', 'South Gate', '사우스 게이트');
-  gate('westgate', 'westGate', 'West Gate', '웨스트 게이트');
+  gate('northgate', 'northGateStairFoot', 'North Gate', tr("노스 게이트"));
+  gate('southgate', 'southGateStairFoot', 'South Gate', tr("사우스 게이트"));
+  gate('westgate', 'westGate', 'West Gate', tr("웨스트 게이트"));
   add({ id: 'deck', text: 'Arena Deck', sub: 'LEVEL 3 · +7.27 m', pos: [-18, DECK_Y.arenaDeck + 1.2, Z.rearEave + 4], scope: 'out', min: 12, max: 170, prio: 3, kind: 'place' });
   // sky bridge to the Hilton on LEVEL 5, on the W facet (house right)
-  add({ id: 'skybridge', text: 'Hilton 연결 브리지', sub: 'LEVEL 5', pos: [74, LEVEL_Y[5] + 5.5, 92], scope: 'out', min: 20, max: 260, prio: 5, kind: 'bridge' });
+  add({ id: 'skybridge', text: tr("Hilton 연결 브리지"), sub: 'LEVEL 5', pos: [74, LEVEL_Y[5] + 5.5, 92], scope: 'out', min: 20, max: 260, prio: 5, kind: 'bridge' });
 
   // entrances
-  const entKo = { Main: '메인 엔트런스', North: '노스 엔트런스', South: '사우스 엔트런스' };
+  const entKo = { Main: tr("메인 엔트런스"), North: tr("노스 엔트런스"), South: tr("사우스 엔트런스") };
   for (const e of SPEC.geo?.entrances || []) {
     const [x, z] = G(...e.xy_G);
     const name = e.name.split(' (')[0];
@@ -127,26 +128,26 @@ export function builtinLabels() {
     const out = key === 'Main' ? [0, 4.5] : [Math.sign(x) * 5.5, 8.5];
     add({ id: `ent-${key}`, text: name, sub: `${entKo[key] || ''} · LEVEL 3`, pos: [x + out[0], e.elevation_m + 5.2, z + out[1]], scope: 'out', min: 14, max: 300, prio: 7, kind: 'entrance' });
   }
-  add({ id: 'eave', text: '대형 처마', sub: '돌출 9 m · 기둥 24개', pos: [-24, 39, Z.rearEave - 3], scope: 'out', min: 25, max: 220, prio: 2, kind: 'part' });
+  add({ id: 'eave', text: tr("대형 처마"), sub: tr("돌출 9 m · 기둥 24개"), pos: [-24, 39, Z.rearEave - 3], scope: 'out', min: 25, max: 220, prio: 2, kind: 'part' });
   add({ id: 'glassbox', text: 'Glass Box', sub: 'Lounge 5 · VIP · Arena Bar 7', pos: [14, 30, GLASS_BOX.zFront + 0.5], scope: 'out', min: 25, max: 200, prio: 2, kind: 'part' });
 
   // inside: stage, tiers
-  add({ id: 'stage', text: '무대', sub: `기본 스테이지 ${SPEC.stage.width_m} × ${SPEC.stage.depth_m} m`, pos: [0, SPEC.stage.height_m + 3.2, -SPEC.stage.depth_m / 2], scope: 'in', min: 8, max: 420, prio: 9, kind: 'part' });
+  add({ id: 'stage', text: tr("무대"), sub: tr("기본 스테이지 {0} × {1} m", SPEC.stage.width_m, SPEC.stage.depth_m), pos: [0, SPEC.stage.height_m + 3.2, -SPEC.stage.depth_m / 2], scope: 'in', min: 8, max: 420, prio: 9, kind: 'part' });
   const tiers = [
-    ['L1/C', 'ARENA', 'LEVEL 1 · 3,964석', 1, 0.45],
-    ['L3/C', 'LOWER STAND', 'LEVEL 3 · 4,978석', 3, 0.5],
-    ['L5/C', 'MIDDLE STAND', 'LEVEL 5 · 4,372석', 5, 0.75],
-    ['L7/C', 'UPPER STAND', 'LEVEL 7 · 6,579석', 7, 0.5],
+    ['L1/C', 'ARENA', tr("LEVEL 1 · 3,964석"), 1, 0.45],
+    ['L3/C', 'LOWER STAND', tr("LEVEL 3 · 4,978석"), 3, 0.5],
+    ['L5/C', 'MIDDLE STAND', tr("LEVEL 5 · 4,372석"), 5, 0.75],
+    ['L7/C', 'UPPER STAND', tr("LEVEL 7 · 6,579석"), 7, 0.5],
   ];
   for (const [key, text, sub, level, frac] of tiers) {
     const pos = tierLabelPos(key, frac);
     if (pos) add({ id: `tier-${level}`, text, sub, pos, scope: 'in', min: 10, max: 420, prio: 8, kind: 'part', level });
   }
-  add({ id: 'balcony', text: 'BALCONY 발코니석', sub: '235석', pos: tierLabelPos('L5/balcony', 0.5) || [0, 13, 56], scope: 'in', min: 6, max: 70, prio: 3, kind: 'part', level: 5 });
-  add({ id: 'vip', text: 'VIP BOX', sub: 'LEVEL 6 · 11실', pos: [0, LEVEL_Y[6] + 3.2, 70.5], scope: 'in', min: 8, max: 110, prio: 4, kind: 'part', level: 6 });
-  add({ id: 'lounge5', text: 'Lounge 5', sub: 'LEVEL 5 · 약 400석', pos: [0, LEVEL_Y[5] + 3.4, (GLASS_BOX.zBack + GLASS_BOX.zFront) / 2], scope: 'in', min: 4, max: 90, prio: 5, kind: 'place', level: 5 });
-  add({ id: 'bar7', text: 'Arena Bar 7', sub: 'LEVEL 7 · 120석', pos: [0, LEVEL_Y[7] + 3.2, (GLASS_BOX.zBack + GLASS_BOX.zFront) / 2], scope: 'in', min: 4, max: 90, prio: 5, kind: 'place', level: 7 });
-  add({ id: 'foyer', text: 'Main Foyer', sub: 'LEVEL 3 · 메인 홀', pos: [0, LEVEL_Y[3] + 3.6, 82], scope: 'in', min: 4, max: 90, prio: 5, kind: 'place', level: 3 });
+  add({ id: 'balcony', text: tr("BALCONY 발코니석"), sub: tr("235석"), pos: tierLabelPos('L5/balcony', 0.5) || [0, 13, 56], scope: 'in', min: 6, max: 70, prio: 3, kind: 'part', level: 5 });
+  add({ id: 'vip', text: 'VIP BOX', sub: tr("LEVEL 6 · 11실"), pos: [0, LEVEL_Y[6] + 3.2, 70.5], scope: 'in', min: 8, max: 110, prio: 4, kind: 'part', level: 6 });
+  add({ id: 'lounge5', text: 'Lounge 5', sub: tr("LEVEL 5 · 약 400석"), pos: [0, LEVEL_Y[5] + 3.4, (GLASS_BOX.zBack + GLASS_BOX.zFront) / 2], scope: 'in', min: 4, max: 90, prio: 5, kind: 'place', level: 5 });
+  add({ id: 'bar7', text: 'Arena Bar 7', sub: tr("LEVEL 7 · 120석"), pos: [0, LEVEL_Y[7] + 3.2, (GLASS_BOX.zBack + GLASS_BOX.zFront) / 2], scope: 'in', min: 4, max: 90, prio: 5, kind: 'place', level: 7 });
+  add({ id: 'foyer', text: 'Main Foyer', sub: tr("LEVEL 3 · 메인 홀"), pos: [0, LEVEL_Y[3] + 3.6, 82], scope: 'in', min: 4, max: 90, prio: 5, kind: 'place', level: 3 });
 
   // gates (扉) of the official seat map
   for (const [id, [x, z]] of Object.entries(GATES)) {
@@ -183,14 +184,14 @@ export function normalise(raw, moduleId) {
     // proper names stay in Japanese / English, the Korean reading goes on the second line
     let text = l.text || l.label || l.name || l.title;
     let sub = l.sub || l.subtitle || '';
-    const proper = l.ja || l.en;
-    if (proper && l.ko && proper !== l.ko) {
+    const proper = language === 'en' ? l.en || l.ja : l.ja || l.en;
+    if (proper && (l.ko || language !== 'ko')) {
       text = proper;
-      if (!sub) sub = l.ko;
+      if (!sub) sub = language === 'ko' ? l.ko : [l.ja, l.en].find(name => name && name !== proper) || '';
     } else if (!text) text = proper || l.ko;
     if (!text) return;
     if (!sub && l.en && l.en !== text && !l.ko) sub = l.en;
-    if (l.beyond) sub = `${sub ? `${sub} · ` : ''}${l.beyond} m 더 →`;
+    if (l.beyond) sub = tr("{0}{1} m 더 →", sub ? `${sub} · ` : '', l.beyond);
     const kind = l.kind || l.type || 'place';
     out.push({
       module: moduleId,

@@ -38,7 +38,7 @@ export function groundMaterials() {
     promenade: mat('site.promenade', { color: '#BDB6AB', roughness: 0.9, metalness: 0, tile: 2, ...layer(2.6) }),
     cycle: mat('site.cyclePath', { color: '#9A7B6B', roughness: 0.9, metalness: 0, tile: 4, ...layer(1.8) }),
     steps: mat('site.pathSteps', { color: '#B9B9B6', roughness: 0.8, metalness: 0, tile: 1, ...layer(2.2) }),
-    median: mat('site.medianPlanting', { color: '#6F9648', roughness: 1, metalness: 0, tile: 3, ...layer(2) }),
+    median: mat('site.medianPlanting', { color: '#6F9648', roughness: 1, metalness: 0, tile: 3, ...layer(1.5) }),
     // --- railway
     ballast: mat('site.ballast', { color: '#7A736A', roughness: 1, metalness: 0, tile: 2 }),
     sleeper: mat('site.sleeper', { color: '#A9A69E', roughness: 0.9, metalness: 0, tile: 1 }),

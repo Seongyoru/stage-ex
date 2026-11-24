@@ -1,3 +1,4 @@
+import { tr } from './i18n.js';
 // Visibility of model objects from their tags:
 //   userData.layer       layer toggle (exterior, roof, structure, hall, bowl, seats, stage, venues, precinct, context, ground, …)
 //   userData.level       building LEVEL 1..9 (floor selector)
@@ -14,17 +15,17 @@ import * as THREE from 'three';
 
 /** Layers in panel order, with Korean names. Unknown layers found in modules are appended. */
 export const LAYERS = [
-  { id: 'exterior', ko: '외관' },
-  { id: 'roof', ko: '지붕' },
-  { id: 'structure', ko: '구조체' },
-  { id: 'hall', ko: '홀 벽·갤러리' },
-  { id: 'bowl', ko: '객석 스탠드' },
-  { id: 'seats', ko: '좌석' },
-  { id: 'stage', ko: '무대·연출 설비' },
-  { id: 'venues', ko: '라운지·콘코스' },
+  { id: 'exterior', ko: tr("외관") },
+  { id: 'roof', ko: tr("지붕") },
+  { id: 'structure', ko: tr("구조체") },
+  { id: 'hall', ko: tr("홀 벽·갤러리") },
+  { id: 'bowl', ko: tr("객석 스탠드") },
+  { id: 'seats', ko: tr("좌석") },
+  { id: 'stage', ko: tr("무대·연출 설비") },
+  { id: 'venues', ko: tr("라운지·콘코스") },
   { id: 'precinct', ko: 'Music Terrace' },
-  { id: 'context', ko: '주변 건물' },
-  { id: 'ground', ko: '지면' },
+  { id: 'context', ko: tr("주변 건물") },
+  { id: 'ground', ko: tr("지면") },
 ];
 
 const LAYER_ALIAS = { site: 'ground' };
@@ -99,7 +100,7 @@ export class Visibility {
   /** Layer ids for the panel: the known ones that occur, then any others found. */
   layerList() {
     const known = LAYERS.filter((l) => this.layersSeen.has(l.id));
-    const extra = [...this.layersSeen].filter((id) => !LAYERS.some((l) => l.id === id)).map((id) => ({ id, ko: id === 'props' ? '소품' : id }));
+    const extra = [...this.layersSeen].filter((id) => !LAYERS.some((l) => l.id === id)).map((id) => ({ id, ko: id === 'props' ? tr("소품") : id }));
     return [...known, ...extra];
   }
 

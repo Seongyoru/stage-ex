@@ -1,3 +1,4 @@
+import { tr } from './i18n.js';
 // Seat-view logic: seat lookup and neighbours, the view from a seat, distances to the
 // stage, and picking a seat by clicking the instanced seat meshes.
 import * as THREE from 'three';
@@ -146,17 +147,17 @@ export function nearestGate(seat) {
 export function seatKindKo(seat) {
   switch (seat.kind) {
     case 'vip':
-      return seat.box ? `VIP BOX ${seat.box}` : 'VIP BOX 좌석';
+      return seat.box ? `VIP BOX ${seat.box}` : tr("VIP BOX 좌석");
     case 'companion':
-      return '휠체어석 동반자석';
+      return tr("휠체어석 동반자석");
     case 'arena':
-      return '아레나 이동식 좌석';
+      return tr("아레나 이동식 좌석");
     case 'telescopic':
-      return '가동식 스탠드 (1–11열)';
+      return tr("가동식 스탠드 (1–11열)");
     case 'balcony':
-      return '발코니석 (Cadenza)';
+      return tr("발코니석 (Cadenza)");
     default:
-      return '고정 스탠드석';
+      return tr("고정 스탠드석");
   }
 }
 
@@ -167,8 +168,8 @@ export function seatTitle(seat) {
 }
 
 export function tierKo(seat) {
-  if (seat.kind === 'vip' || seat.tier === 6) return 'VIP 박스';
-  return TIER_INFO[seat.tier]?.ko || '';
+  if (seat.kind === 'vip' || seat.tier === 6) return tr("VIP 박스");
+  return tr(TIER_INFO[seat.tier]?.ko || '');
 }
 
 /**

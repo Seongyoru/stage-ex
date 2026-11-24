@@ -1,3 +1,4 @@
+import { language } from './i18n.js';
 // Tiny DOM helpers (no framework).
 
 /** h('button', { class: 'x', onClick: fn }, 'text', child) */
@@ -61,5 +62,5 @@ export function icon(name, size = 18) {
 }
 
 export function fmt(n, digits = 1) {
-  return Number(n).toLocaleString('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return Number(n).toLocaleString(language, { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }

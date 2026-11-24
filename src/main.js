@@ -1,3 +1,4 @@
+import { tr } from './app/i18n.js';
 // Entry point of the K-Arena Yokohama digital twin.
 //
 // One three.js scene: the arena model modules (src/arena, src/site) on a local diorama
@@ -20,7 +21,7 @@ function fatal(err) {
   loading.classList.add('failed');
   const step = loading.querySelector('#loading-step');
   const warn = loading.querySelector('#loading-warn');
-  if (step) step.textContent = '모델을 표시할 수 없습니다.';
+  if (step) step.textContent = tr("모델을 표시할 수 없습니다.");
   if (warn) warn.textContent = String(err && err.message ? err.message : err);
 }
 
@@ -34,7 +35,7 @@ function webglAvailable() {
 }
 
 async function main() {
-  if (!webglAvailable()) throw new Error('이 브라우저 / 기기에서는 WebGL 2를 사용할 수 없습니다.');
+  if (!webglAvailable()) throw new Error(tr("이 브라우저 / 기기에서는 WebGL 2를 사용할 수 없습니다."));
   const app = new App({
     canvas: document.getElementById('view'),
     uiRoot: document.getElementById('ui'),

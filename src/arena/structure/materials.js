@@ -3,24 +3,30 @@
 // texture set can be attached to it later; `tile` = real size of one texture repeat (m).
 import { mat, emissiveMat } from '../../core/materials.js';
 
+// Coincident slab tops meet deck paving, wall cores and stair landings.
+// Bias only the depth buffer so walking and section elevations stay exact.
+const floorDepth = { polygonOffset: true, polygonOffsetUnits: -3 };
+const landingDepth = { polygonOffset: true, polygonOffsetUnits: -6 };
+const markingDepth = { polygonOffset: true, polygonOffsetUnits: -9 };
+
 const DEF = {
   // floors
-  floorSealed: () => mat('structure.floorSealed', { color: '#8C857C', roughness: 0.28, metalness: 0, tile: 4 }),
-  floorFoyer: () => mat('structure.floorFoyer', { color: '#8E8478', roughness: 0.2, metalness: 0, tile: 4 }),
-  floorDark: () => mat('structure.floorDark', { color: '#3A3B3D', roughness: 0.25, metalness: 0, tile: 4 }),
-  floorBoh: () => mat('structure.floorBoh', { color: '#9A968E', roughness: 0.6, metalness: 0, tile: 3 }),
-  floorVipShell: () => mat('structure.floorVipShell', { color: '#2B2A2E', roughness: 0.5, metalness: 0, tile: 2 }),
-  floorBackstage: () => mat('structure.floorBackstage', { color: '#7D7266', roughness: 0.55, metalness: 0, tile: 1.8 }),
-  laneYellow: () => mat('structure.laneMarking', { color: '#D9A91E', roughness: 0.6, metalness: 0, tile: 1 }),
-  tactile: () => mat('structure.tactileStrip', { color: '#C9CBCD', roughness: 0.35, metalness: 0.8, tile: 0.3 }),
+  floorSealed: () => mat('structure.floorSealed', { ...floorDepth, color: '#8C857C', roughness: 0.28, metalness: 0, tile: 4 }),
+  floorFoyer: () => mat('structure.floorFoyer', { ...floorDepth, color: '#8E8478', roughness: 0.2, metalness: 0, tile: 4 }),
+  floorDark: () => mat('structure.floorDark', { ...floorDepth, color: '#3A3B3D', roughness: 0.25, metalness: 0, tile: 4 }),
+  floorBoh: () => mat('structure.floorBoh', { ...floorDepth, color: '#9A968E', roughness: 0.6, metalness: 0, tile: 3 }),
+  floorVipShell: () => mat('structure.floorVipShell', { ...floorDepth, color: '#2B2A2E', roughness: 0.5, metalness: 0, tile: 2 }),
+  floorBackstage: () => mat('structure.floorBackstage', { ...floorDepth, color: '#7D7266', roughness: 0.55, metalness: 0, tile: 1.8 }),
+  laneYellow: () => mat('structure.laneMarking', { ...markingDepth, color: '#D9A91E', roughness: 0.6, metalness: 0, tile: 1 }),
+  tactile: () => mat('structure.tactileStrip', { ...markingDepth, color: '#C9CBCD', roughness: 0.35, metalness: 0.8, tile: 0.3 }),
   // structure
   soffit: () => mat('structure.soffit', { color: '#2A2A2A', roughness: 0.95, metalness: 0, tile: 2 }),
   bulkhead: () => mat('structure.bulkhead', { color: '#2E3034', roughness: 0.8, metalness: 0, tile: 2.4 }),
   beam: () => mat('structure.beamSteel', { color: '#3A3B3E', roughness: 0.9, metalness: 0, tile: 2 }),
   concreteFair: () => mat('structure.concreteFair', { color: '#BDBAB3', roughness: 0.7, metalness: 0, tile: 1.8 }),
   concreteCore: () => mat('structure.concreteCore', { color: '#8F8D88', roughness: 0.8, metalness: 0, tile: 2.4 }),
-  stairNosing: () => mat('structure.stairNosing', { color: '#2E2F31', roughness: 0.8, metalness: 0, tile: 0.5 }),
-  stairConcrete: () => mat('structure.stairConcrete', { color: '#8E8E8C', roughness: 0.6, metalness: 0, tile: 1.2 }),
+  stairNosing: () => mat('structure.stairNosing', { ...markingDepth, color: '#2E2F31', roughness: 0.8, metalness: 0, tile: 0.5 }),
+  stairConcrete: () => mat('structure.stairConcrete', { ...landingDepth, color: '#8E8E8C', roughness: 0.6, metalness: 0, tile: 1.2 }),
   // wall finishes
   mortar: () => mat('structure.mortar', { color: '#55575C', roughness: 0.8, metalness: 0, tile: 2.4 }),
   mortarL3: () => mat('structure.mortarL3', { color: '#6E7075', roughness: 0.8, metalness: 0, tile: 2.4 }),

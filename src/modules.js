@@ -1,3 +1,4 @@
+import { tr } from './app/i18n.js';
 // Model module registry of the app.
 //
 // The eleven model modules live in src/site/*.js and src/arena/*.js and are written by
@@ -20,17 +21,17 @@ const devLoaders = import.meta.env.DEV ? import.meta.glob(['./arena/_*.js', './s
 
 /** The expected modules in build order, with the Korean name shown while loading. */
 export const MODULES = [
-  { id: 'site/ground', ko: '지면' },
-  { id: 'site/context', ko: '주변 건물' },
+  { id: 'site/ground', ko: tr("지면") },
+  { id: 'site/context', ko: tr("주변 건물") },
   { id: 'site/precinct', ko: 'Music Terrace' },
-  { id: 'arena/structure', ko: '구조체' },
-  { id: 'arena/exterior', ko: '외관' },
-  { id: 'arena/roof', ko: '지붕' },
-  { id: 'arena/hall', ko: '홀' },
-  { id: 'arena/bowl', ko: '객석 스탠드' },
-  { id: 'arena/seats', ko: '좌석' },
-  { id: 'arena/stage', ko: '무대' },
-  { id: 'arena/venues', ko: '라운지·콘코스' },
+  { id: 'arena/structure', ko: tr("구조체") },
+  { id: 'arena/exterior', ko: tr("외관") },
+  { id: 'arena/roof', ko: tr("지붕") },
+  { id: 'arena/hall', ko: tr("홀") },
+  { id: 'arena/bowl', ko: tr("객석 스탠드") },
+  { id: 'arena/seats', ko: tr("좌석") },
+  { id: 'arena/stage', ko: tr("무대") },
+  { id: 'arena/venues', ko: tr("라운지·콘코스") },
 ];
 
 const idOf = (key) => key.replace(/^\.\//, '').replace(/\.js$/, '');
