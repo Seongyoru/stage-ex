@@ -21,3 +21,22 @@ if (venue) {
   document.body.classList.add('directory-page');
   directory();
 }
+
+function isStageExPage(url) {
+  return url.origin === 'https://seongyoru.github.io' &&
+    ['/stage-ex', '/stage-ex/', '/stage-ex/index.html'].includes(url.pathname);
+}
+
+// Venue links, language changes and quality changes can reload the same app.
+// Only load the counter on entry, keeping the original external referrer.
+if (isStageExPage(location) &&
+    !(document.referrer && isStageExPage(new URL(document.referrer))) &&
+    !document.querySelector('script[data-goatcounter]')) {
+  const script = document.createElement('script');
+  script.dataset.goatcounter = 'https://sonyoru.goatcounter.com/count';
+  script.dataset.goatcounterSettings = JSON.stringify({ path: '/stage-ex', title: 'STAGE EX', no_events: true });
+  script.async = true;
+  script.fetchPriority = 'low';
+  script.src = 'https://gc.zgo.at/count.js';
+  document.head.append(script);
+}
