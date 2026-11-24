@@ -3,7 +3,6 @@
 import { WING_ANGLE } from '../../core/seating.js';
 import { frameC, frameW, xJ, aJ, RC0, RW0 } from './kit.js';
 import { R, Y, wallIn, A_IN, A_ZONE, A_HALL, GATE_PLAN, CIRC, standY } from './plan.js';
-import { VIP_BACK_Z } from './slabs.js';
 import { gateDoor, room, wcEntrance, kioskShell, lockers, cubicles, vanity, hydrant, column } from './fittings.js';
 import { signF } from './signs.js';
 
@@ -96,24 +95,25 @@ function level6(kit) {
   // organiser's room on the axis and five corporate rooms each side), the corridor wall
   // with one door per room, and a plain back-of-house wall on the wings.
   const rFront = R.l6Front;
-  // The box rooms (dividing walls at x = ±5, ±10 … ±30, rear wall at z = 79.3-79.5) are built by
-  // arena/bowl and furnished by arena/venues, whose rooms end on a wall face at apothem 111.2
-  // with one door per room: that wall stands here, inside the bowl's shell, and the same doors
-  // are repeated on the corridor face of the bowl's rear wall.
+  // The bowl's thin rear shell sits inside this finished wall. Centre each closed
+  // leaf on its opening so it is visible from both the room and the corridor.
   const rBackWall = 111.3;
-  const rCorr = VIP_BACK_Z + 0.2 + RC0; // corridor face of the bowl's rear wall
+  const wallThickness = 0.2;
+  const jambDepth = wallThickness / 2 + 0.015;
+  const leafDepth = 0.06; // half-depth, clears the 0.045 m shell on either side
   for (const s of [1, -1]) {
     const C = frameC(s);
     const W = frameW(s);
     const doors = [5, 10, 15, 20, 25].map((b) => b + 0.87);
     if (s < 0) doors.push(3.98); // organiser's room: door on the house-left side
-    kit.wall(C, 0, rBackWall, 29.85, rBackWall, y6, c6, 0.2, 'vipPanel', 6, doors.map((d) => ({ at: d, w: 1.0, h: 2.2 })));
+    kit.wall(C, 0, rBackWall, 29.85, rBackWall, y6, c6, wallThickness, 'vipPanel', 6, doors.map((d) => ({ at: d, w: 1.0, h: 2.2 })));
     for (const d of doors) {
-      kit.box(C, d - 0.48, d + 0.48, rBackWall - 0.03, rBackWall + 0.03, y6, y6 + 2.2, 'vipDoor', 6);
-      // corridor side: door leaf and frame on the bowl's wall, pull handle
-      kit.box(C, d - 0.48, d + 0.48, rCorr, rCorr + 0.04, y6, y6 + 2.2, 'vipDoor', 6);
-      kit.box(C, d - 0.56, d + 0.56, rCorr, rCorr + 0.02, y6, y6 + 2.28, 'steelBlack', 6);
-      kit.box(C, d + 0.34, d + 0.38, rCorr + 0.04, rCorr + 0.1, y6 + 0.9, y6 + 1.3, 'stainless', 6);
+      kit.box(C, d - 0.48, d + 0.48, rBackWall - leafDepth, rBackWall + leafDepth, y6, y6 + 2.17, 'vipDoor', 6);
+      for (const [left, right] of [[d - 0.56, d - 0.48], [d + 0.48, d + 0.56]]) {
+        kit.box(C, left, right, rBackWall - jambDepth, rBackWall + jambDepth, y6, y6 + 2.17, 'steelBlack', 6);
+      }
+      kit.box(C, d - 0.56, d + 0.56, rBackWall - jambDepth, rBackWall + jambDepth, y6 + 2.17, y6 + 2.28, 'steelBlack', 6);
+      kit.box(C, d + 0.34, d + 0.38, rBackWall + leafDepth, rBackWall + leafDepth + 0.06, y6 + 0.9, y6 + 1.3, 'stainless', 6);
     }
     kit.wall(C, 30.0, rFront, xJ(rFront), rFront, y6, c6, 0.2, 'boh', 6);
     // wings: wall behind the top row of the Middle Stand, service partitions
