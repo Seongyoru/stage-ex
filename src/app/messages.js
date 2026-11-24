@@ -1,5 +1,9 @@
 // Korean source text maps to English and Japanese. Numbered slots can be reordered by locale.
 export const messages = {
+  "3층 입구 문을 바라보고 E를 누르세요. 터치 화면에서는 문 열기 안내를 누르세요.": ["Face a Level 3 entrance door and press E, or tap the prompt to open it.","LEVEL 3の入口ドアに向かってEキーを押してください。タッチ操作では画面の案内をタップします。"],
+  "{0} · 문 열기": ["{0} · Open doors","{0} · ドアを開ける"],
+  "{0} · 문 닫기": ["{0} · Close doors","{0} · ドアを閉める"],
+  "입구 문 열기 / 닫기 (터치는 화면 안내를 누르세요)": ["Open or close entrance doors (on touchscreens, tap the prompt)","入口ドアを開閉（タッチ操作は画面の案内をタップ）"],
   "공연 일정": ["Upcoming shows","公演スケジュール"],
   "공식 일정": ["Official schedule","公式日程"],
   "일본 현지 시간": ["Japan local time","日本現地時間"],

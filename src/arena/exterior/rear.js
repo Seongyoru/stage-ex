@@ -65,7 +65,7 @@ function glazedRange(st) {
   return [lo, hi];
 }
 
-function wallStretch(col, st, detail) {
+function wallStretch(col, st, detail, doors) {
   const lo = (s) => st.a0(s);
   const hi = (s) => st.a1(s);
   // ---- LEVEL 3 entrance storey on the wall line ------------------------------------------------
@@ -99,7 +99,9 @@ function wallStretch(col, st, detail) {
   }
   const kerbRuns = door ? [[lo(S_WALL), door[0]], [door[1], hi(S_WALL)]] : [[lo(S_WALL), hi(S_WALL)]];
   for (const [a, b] of kerbRuns) obox(kerb, F3, a, b, Y3, Y3 + 0.6, 0, 0.05, 'b');
-  if (door) doorScreen(col, F3, door[0], door[1], Y3, ENTRANCE_H, { bays: 4, open: [1, 2], level: 3, transom: 2.45 });
+  if (door) doorScreen(col, F3, door[0], door[1], Y3, ENTRANCE_H, {
+    doors, entrance: st.tag === 'R' ? '사우스 엔트런스' : '노스 엔트런스', bays: 4,
+  });
 
   // under-deck storeys (LEVEL 1-2) on the same wall line: plain blue-grey base wall
   slab(col.geo('facade.plinth', { level: 1, part: 'plinth' }), F3, rect(lo(S_WALL), 0, hi(S_WALL), Y3 - 0.05), { t: WALL_T, off: -0.05 });
@@ -208,6 +210,6 @@ function wallStretch(col, st, detail) {
 
 const S_COLLINE = FACADE.eave.projection_m;
 
-export function buildRear(col, { detail = true } = {}) {
-  for (const st of stretches()) wallStretch(col, st, detail);
+export function buildRear(col, { detail = true, doors }) {
+  for (const st of stretches()) wallStretch(col, st, detail, doors);
 }

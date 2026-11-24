@@ -334,6 +334,7 @@ export class UI {
         }),
       ),
       r.flySwitch,
+      h('p', { class: 'hint' }, tr('3층 입구 문을 바라보고 E를 누르세요. 터치 화면에서는 문 열기 안내를 누르세요.')),
       h('p', { class: 'hint' }, h('b', null, 'W A S D'), tr(" 이동 · "), h('b', null, 'Shift'), tr(" 달리기 · "), h('b', null, 'Space'), tr(" 점프. 화면을 클릭하면 마우스로 시선을 움직입니다. 터치 기기에서는 왼쪽 아래 조이스틱을 사용하세요.")),
       r.walkInfo,
     );
@@ -644,6 +645,14 @@ export class UI {
     r.flipSwitch.hidden = s.sectionAxis === 'y';
   }
 
+  setDoorPrompt(door) {
+    if (this.promptEntrance === door?.entrance && this.promptOpen === door?.open) return;
+    this.promptEntrance = door?.entrance;
+    this.promptOpen = door?.open;
+    this.doorPrompt = door ? tr(door.open ? '{0} · 문 닫기' : '{0} · 문 열기', tr(door.entrance)) : '';
+    this.syncHud();
+  }
+
   /** Bottom readout for the current mode. */
   syncHud() {
     const s = this.s;
@@ -687,6 +696,10 @@ export class UI {
           nav('chevDown', tr("뒷 열 (↓)"), () => app.stepRow(1)),
         ),
       );
+    } else if (s.mode === 'walk' && !s.fly && this.doorPrompt) {
+      hud.classList.add('hud-door');
+      hud.append(h('button', { type: 'button', onClick: () => app.interact() },
+        h('kbd', null, 'E'), h('span', null, this.doorPrompt)));
     } else if (s.mode === 'walk') {
       hud.classList.add('hud-hint');
       append(hud, [

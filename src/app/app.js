@@ -12,7 +12,7 @@ import { CameraRig } from './rig.js';
 import { Visibility, moduleVisible } from './visibility.js';
 import { Section } from './section.js';
 import { Labels, builtinLabels, normalise as normaliseLabels } from './labels.js';
-import { Walker, buildCollider, COLLIDER_LAYERS } from './walk.js';
+import { Walker, buildCollider, COLLIDER_LAYERS, WALK_RADIUS } from './walk.js';
 import { resolveSeat, adjacentSeat, adjacentRow, seatPose, pickSeat, makeSeatMarker, findSpecialSeat, isSpecial } from './seats.js';
 import { VIEWS, HOME_VIEW, viewById, WALK_STARTS, FLIGHT_STARTS, levelView, sectionView, SECTION_RANGE } from './views.js';
 import { parseUrl, buildUrl, makeUrlWriter } from './urlstate.js';
@@ -220,6 +220,7 @@ export class App {
       this.labels.removeByPrefix(`${result.id}-`);
     }
     this.modules.set(result.id, result);
+    if (result.id === 'arena/exterior') this.walker.doors = result.group?.userData.entranceDoors;
     if (result.status !== 'ok') return;
     const { group, mod, id } = result;
     this.model.add(group);
@@ -343,6 +344,7 @@ export class App {
 
   applyVisibility() {
     this.visibility.apply(this.s);
+    if (this.walker.doors) this.walker.doors.enabled = this.s.layers.exterior !== false;
     this.renderer.shadowMap.needsUpdate = true;
     this.invalidate();
   }
@@ -860,6 +862,19 @@ export class App {
     else this.set({ picked: seat });
   }
 
+  walkDoorTarget() {
+    if (this.s.mode !== 'walk' || !this.walker.active || this.walker.fly || !this.s.ui || this.ui.dialogOpen) return null;
+    const direction = (this._interactionDirection ||= new THREE.Vector3());
+    return this.walker.doors?.target(this.camera.position, this.rig.look.getDirection(direction)) ?? null;
+  }
+
+  interact() {
+    const door = this.walkDoorTarget();
+    if (!door) return;
+    this.walker.doors.toggle(door);
+    this.touch();
+  }
+
   onKey(e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName || '')) return;
@@ -874,6 +889,10 @@ export class App {
     }
     if (this.ui.dialogOpen) return;
     if (s.mode === 'walk') {
+      if (e.code === 'KeyE' && !this.walker.fly) {
+        if (!e.repeat && !e.isComposing && !e.target?.isContentEditable) this.interact();
+        return;
+      }
       // movement keys belong to the walker; only a few global toggles stay
       if (/^(Key[WASDQEFC]|Arrow.*|Space|Shift.*)$/.test(e.code)) return;
     }
@@ -999,6 +1018,9 @@ export class App {
       if (s.fly && wasMoving && !moved) this.updateUrl();
     }
     const camMoved = this.rig.update(dt);
+    const feet = this.walker.active && !this.walker.fly ? this.walker.pos : null;
+    if (this.walker.doors?.update(dt, feet, WALK_RADIUS)) this.renderer.shadowMap.needsUpdate = true;
+    this.ui.setDoorPrompt(this.walkDoorTarget());
     if (camMoved) this.touch();
     const blending = this.env.update(dt, this.camera);
     if (blending) this.touch();

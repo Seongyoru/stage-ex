@@ -2,7 +2,7 @@
 //
 // Collider: the static meshes of the bowl, structure, hall, precinct and ground layers,
 // merged into one position-only geometry with a bounds tree. Seats and the facade are
-// not part of it (doors stay passable).
+// not part of it. The entrance doors have separate moving colliders.
 //
 // Controller: a capsule that covers the body ABOVE step height handles walls, rails and
 // ceilings; the feet follow the floor found by rays cast down from step height, so
@@ -14,6 +14,7 @@ export const COLLIDER_LAYERS = new Set(['bowl', 'structure', 'hall', 'precinct',
 
 const EYE = 1.6;
 const RADIUS = 0.3;
+export { RADIUS as WALK_RADIUS };
 const HEIGHT = 1.72;
 const STEP = 0.56; // highest riser that can be walked up
 const GRAVITY = 22;
@@ -294,7 +295,7 @@ export class Walker {
       const speed = FLY * (run ? 3 : 1);
       look.getDirection(this._fwd);
       this.pos.addScaledVector(this._fwd, f * speed * dt).addScaledVector(this._right, s * speed * dt);
-      if (K.has('Space') || K.has('KeyE')) this.pos.y += speed * 0.7 * dt;
+      if (K.has('Space') || (this.fly && K.has('KeyE'))) this.pos.y += speed * 0.7 * dt;
       if (K.has('KeyC') || K.has('KeyQ')) this.pos.y -= speed * 0.7 * dt;
       if (this.lift) this.pos.y += this.lift * speed * 0.7 * dt;
       this.vy = 0;
@@ -303,8 +304,13 @@ export class Walker {
       const steps = Math.max(1, Math.min(6, Math.ceil((speed * dt) / (RADIUS * 0.5))));
       const h = dt / steps;
       for (let i = 0; i < steps; i++) {
+        const x = this.pos.x, z = this.pos.z;
         this.pos.addScaledVector(this._fwd, f * speed * h).addScaledVector(this._right, s * speed * h);
         this._collide();
+        if ((x !== this.pos.x || z !== this.pos.z) && this.doors?.blocks(this.pos, RADIUS)) {
+          this.pos.x = x;
+          this.pos.z = z;
+        }
         this._ground(h);
       }
     }
