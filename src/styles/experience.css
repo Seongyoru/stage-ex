@@ -15,6 +15,10 @@ body.directory-page { background:#111419; color:var(--paper); overflow:auto; col
 .language-select option { color:#151914; background:#f6f7ee; }
 .directory :is(a,button,select):focus-visible,.venues-home:focus-visible,.language-select:focus-visible { outline:3px solid var(--citron); outline-offset:3px; }
 .venue-list { padding-top:clamp(30px,5vh,58px); }
+.venue-jumps { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 18px; }
+.venue-jumps a { border:1px solid #596264; border-radius:20px; padding:7px 14px; color:#e4eadf; text-decoration:none; font-size:13px; }
+.venue-jumps a:hover { border-color:var(--citron); }
+.venue-list article + article { margin-top:36px; }
 .directory-title { display:flex; gap:28px; align-items:flex-end; justify-content:space-between; margin-bottom:22px; }
 .venue-list h1 { font-size:clamp(32px,3.8vw,62px); line-height:1.1; letter-spacing:-.055em; margin:0; font-weight:750; }
 .directory-intro { max-width:31em; font-size:clamp(13px,1.1vw,16px); color:#b4bcc0; margin:0; line-height:1.6; text-wrap:pretty; }

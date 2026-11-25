@@ -13,4 +13,13 @@ export const kArena = {
   ],
 };
 
-export const venues = [kArena];
+export const osakaHall = {
+  id: 'osaka-jo-hall',
+  title: 'Osaka-jo Hall',
+  city: '일본 · 오사카',
+  capacity: 16000,
+  image: './venues/osaka-jo-hall.webp',
+  load: () => import('./osaka/viewer.js').then(viewer => viewer.start()),
+};
+
+export const venues = [kArena, osakaHall];

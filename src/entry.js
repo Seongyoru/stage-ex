@@ -11,6 +11,7 @@ const venue = id ? venues.find(v => v.id === id) : legacy.some(key => params.has
 if (venue) {
   document.body.classList.add('viewer');
   document.title = 'Stage EX · ' + venue.title;
+  document.querySelector('#loading h1').textContent = venue.title;
   document.querySelector('#view').setAttribute('aria-label', venue.title + ' · 3D');
   document.querySelector('#loading .sub').textContent = tr('비공식 3D 디지털 트윈');
   document.querySelector('#loading-step').textContent = tr('불러오는 중…');
