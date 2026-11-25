@@ -20,6 +20,11 @@ export const osakaHall = {
   capacity: 16000,
   image: './venues/osaka-jo-hall.webp',
   load: () => import('./osaka/viewer.js').then(viewer => viewer.start()),
+  shortcuts: [
+    { label: '외관', image: './venues/os-facade.webp', params: { view: 'exterior' } },
+    { label: '분수 광장에서 걷기', image: './venues/os-plaza.webp', params: { view: 'walk', start: 'plaza' } },
+    { label: '좌석 시야', image: './venues/osaka-jo-hall.webp', params: { view: 'seat', block: 'D', row: 12, seat: 15 } },
+  ],
 };
 
 export const venues = [kArena, osakaHall];

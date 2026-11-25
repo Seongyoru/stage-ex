@@ -12,13 +12,15 @@ function box(parent, material, x, y, z, w, h, d) {
   parent.add(mesh);
   return mesh;
 }
-function ring(parent, material, inside, y1, outside, y2) {
+function ring(parent, material, inside, y1, outside, y2, openings = false) {
   const points = [], indices = [];
   for (let i = 0; i <= 192; i++) {
     const u = i / 192 * perimeter;
     const a = rim(u, inside), b = rim(u, outside);
     points.push(a.x,y1,a.z,b.x,y2,b.z);
-    if (i) { const j=i*2; indices.push(j-2,j,j-1,j-1,j,j+1); }
+    if (i && !(openings && Math.abs(rim(u - perimeter/384, inside).x)<4.6)) {
+      const j=i*2; indices.push(j-2,j,j-1,j-1,j,j+1);
+    }
   }
   const g = new T.BufferGeometry();
   g.setAttribute('position', new T.Float32BufferAttribute(points,3));
@@ -110,7 +112,9 @@ export function buildHall(scene) {
   ring(scene,paint(0xbcab91),-.59,1.63,-.47,1.63);
   ring(scene,paint(0x53515a),rowDepth(22)+.65,rowHeight(22),rowDepth(22)+2.7,rowHeight(22));
   const shell=new T.Group();scene.add(shell);
-  ring(shell,paint(0x42424c),rowDepth(22)+2.7,rowHeight(22),rowDepth(22)+2.7,18.6);
+  const backWall=paint(0x42424c), wallDepth=rowDepth(22)+2.7;
+  ring(shell,backWall,wallDepth,rowHeight(22),wallDepth,rowHeight(22)+3.6,true);
+  ring(shell,backWall,wallDepth,rowHeight(22)+3.6,wallDepth,18.6);
   ring(shell,paint(0x383b43),rowDepth(22)+2.7,18.6,-24.7,21.6);
   // Exposed curved roof ribs read from a seat; the overview cuts away the roof.
   const steel=paint(0x72757d);
