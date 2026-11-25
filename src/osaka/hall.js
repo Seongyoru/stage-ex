@@ -1,3 +1,4 @@
+import { gateAt } from './routes.js';
 import * as T from 'three';
 import { byBlock, layouts, perimeter, rim, rowDepth, rowHeight, seats, straight } from './seats.js';
 
@@ -13,17 +14,22 @@ function box(parent, material, x, y, z, w, h, d) {
   return mesh;
 }
 function ring(parent, material, inside, y1, outside, y2, openings = false) {
-  const points = [], indices = [];
+  const points = [], indices = [], uv=[];
   for (let i = 0; i <= 192; i++) {
     const u = i / 192 * perimeter;
     const a = rim(u, inside), b = rim(u, outside);
     points.push(a.x,y1,a.z,b.x,y2,b.z);
-    if (i && !(openings && Math.abs(rim(u - perimeter/384, inside).x)<4.6)) {
+    if(Math.abs(inside-outside)>.01)uv.push(a.x/4,a.z/4,b.x/4,b.z/4);
+    else uv.push(u/4,y1/4,u/4,y2/4);
+    const mid=rim(u-perimeter/384,inside);
+    const gap=openings==='arena'?gateAt(mid.x,mid.z,2.6):openings&&Math.abs(mid.x)<4.6;
+    if (i && !gap) {
       const j=i*2; indices.push(j-2,j,j-1,j-1,j,j+1);
     }
   }
   const g = new T.BufferGeometry();
   g.setAttribute('position', new T.Float32BufferAttribute(points,3));
+  g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
   g.setIndex(indices); g.computeVertexNormals();
   material.side = T.DoubleSide;
   parent.add(new T.Mesh(g,material));
@@ -52,6 +58,7 @@ function chairs(parent, places, material, backMaterial, size) {
     backs.setColorAt(i,tint);cushions.setColorAt(i,tint);
   }
   parent.add(cushions,backs,supports);
+  return [cushions,backs];
 }
 function blockSigns(parent) {
   const signs=paint(0x313438);
@@ -93,31 +100,48 @@ function displayTexture() {
   return new T.MeshBasicMaterial({map});
 }
 
-export function buildHall(scene) {
+export function buildHall(scene,redraw) {
   const concrete=paint(0x746e69),riser=paint(0x49474a), metal=paint(0x41444e);
+  const loader=new T.TextureLoader();
+  function finish(material,name){
+    const map=loader.load('./textures/'+name+'_albedo.webp',redraw);
+    map.wrapS=map.wrapT=T.RepeatWrapping;map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;
+    material.map=map;return material;
+  }
+  finish(concrete,'concrete_stand');
   const stageDark=paint(0x272731), trim=light(0xedac80), teal=light(0x91d6db);
   const led=displayTexture();
   // The venue publishes an 83.4 x 48.2 m arena floor and a 21 m ceiling.
-  ring(scene,paint(0x665b51),-24.7,.01,-.52,.01);
-  ring(scene,riser,-.52,0,-.52,rowHeight(1));
+  ring(scene,finish(paint(0xaeccd5),'concrete_floor_sealed'),-24.7,.01,-.52,.01);
+  ring(scene,riser,-.52,0,-.52,rowHeight(1),'arena');
   for (let r=1;r<=22;r++) {
     const d=rowDepth(r);
     const next=r===22?d+.65:rowDepth(r+1)-.48;
     ring(scene,concrete,d-.48,rowHeight(r),next,rowHeight(r));
     if(r<22) ring(scene,riser,next,rowHeight(r),next,rowHeight(r+1));
   }
-  chairs(scene,[...seats.values()],paint(0x9c6145),paint(0xb87b52),.48);
+  const standSeats=[...seats.values()];
+  const pickable=chairs(scene,standSeats,paint(0xb74624),paint(0xd3542e),.48);
   blockSigns(scene);
-  ring(scene,paint(0x393b42),-.56,.12,-.56,1.60);
-  ring(scene,paint(0xbcab91),-.59,1.63,-.47,1.63);
+  ring(scene,paint(0x393b42),-.56,.12,-.56,1.60,'arena');
+  ring(scene,paint(0xbcab91),-.59,1.63,-.47,1.63,'arena');
+  const fascia=paint(0xe1dcd2);
+  ring(scene,fascia,-.61,1.04,-.61,1.61,'arena');
   ring(scene,paint(0x53515a),rowDepth(22)+.65,rowHeight(22),rowDepth(22)+2.7,rowHeight(22));
   const shell=new T.Group();scene.add(shell);
   const backWall=paint(0x42424c), wallDepth=rowDepth(22)+2.7;
   ring(shell,backWall,wallDepth,rowHeight(22),wallDepth,rowHeight(22)+3.6,true);
   ring(shell,backWall,wallDepth,rowHeight(22)+3.6,wallDepth,18.6);
-  ring(shell,paint(0x383b43),rowDepth(22)+2.7,18.6,-24.7,21.6);
+  ring(shell,finish(paint(0x888d94),'acoustic_ribbed_dark'),rowDepth(22)+2.7,18.6,-24.7,21.6);
   // Exposed curved roof ribs read from a seat; the overview cuts away the roof.
   const steel=paint(0x72757d);
+  const trussParts=[];
+  const beam=(a,b,w)=>{
+    const delta=b.clone().sub(a),m=new T.Object3D();
+    m.position.copy(a).addScaledVector(delta,.5);m.scale.set(w,delta.length(),w);
+    m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),delta.normalize());
+    m.updateMatrix();trussParts.push(m.matrix.clone());
+  };
   for(let x=-52;x<=52;x+=6.5) {
     const end=Math.sqrt(46**2-Math.max(0,Math.abs(x)-straight)**2);
     for(let i=0;i<10;i++) {
@@ -126,21 +150,44 @@ export function buildHall(scene) {
       const dy=height(z1)-height(z0);
       const rib=box(shell,steel,x,(height(z1)+height(z0))/2,(z0+z1)/2,.19,.26,Math.hypot(z1-z0,dy));
       rib.rotation.x=-Math.atan2(dy,z1-z0);
+      const v=(z,y)=>new T.Vector3(x,y,z);
+      beam(v(z0,height(z0)-1.15),v(z1,height(z1)-1.15),.085);
+      beam(v(z0,height(z0)-1.15),v((z0+z1)/2,(height(z0)+height(z1))/2),.069);
+      beam(v((z0+z1)/2,(height(z0)+height(z1))/2),v(z1,height(z1)-1.15),.069);
     }
   }
+  const lattice=new T.InstancedMesh(unit,steel,trussParts.length);
+  trussParts.forEach((matrix,i)=>lattice.setMatrixAt(i,matrix));shell.add(lattice);
   const pale=light(0xfde9bd);
   for(const z of [-16,16]) {
     box(shell,metal,0,17.9,z,65,.23,.45);
     for(let x=-30;x<=30;x+=6) box(shell,pale,x,17.7,z,.72,.1,.32);
   }
   const floorMat=paint(0x405864), floorBack=paint(0x59717a);
-  const shows={};
+  const shows={}, lighting=new T.Group();
+  shell.add(lighting);
+  // Central cluster and eighteen distributed speakers on the public equipment list.
+  box(lighting,stageDark,0,17.4,0,3.4,2.3,2.8);
+  for(let i=0;i<18;i++){
+    const a=i*Math.PI/9;
+    const speaker=box(lighting,stageDark,36*Math.cos(a),16.8,22*Math.sin(a),.95,1.3,.72);
+    speaker.rotation.y=-a;
+  }
+  const concert=[];
   for (const [key,layout] of Object.entries(layouts)) {
     const group=new T.Group();scene.add(group);shows[key]=group;
     const stage=new T.Group();
     stage.position.set(layout.x,0,layout.z);stage.rotation.y=layout.yaw;
     group.add(stage);
     const w=layout.width,d=layout.depth;
+    const beams=new T.Group();stage.add(beams);concert.push(beams);beams.visible=false;
+    for(let i=0;i<8;i++){
+      const color=i%2?0x7fcfff:0xf0a0d3;
+      const beam=new T.Mesh(new T.ConeGeometry(1.32,8.2,16,1,true),
+        new T.MeshBasicMaterial({color,transparent:true,opacity:.085,depthWrite:false,blending:T.AdditiveBlending,side:T.DoubleSide}));
+      beam.position.set((i-3.5)*w/8,5.5,1.5);beam.rotation.z=(i-3.5)*.075;beams.add(beam);
+    }
+    const wash=new T.PointLight(0x98bcff,120,24);wash.position.set(0,5,2);beams.add(wash);
     box(stage,stageDark,0,.76,0,w,1.5,d);
     box(stage,trim,0,1.48,d/2,w,.09,.09);
     if(key!=='C') {
@@ -193,5 +240,6 @@ export function buildHall(scene) {
     }
     chairs(group,floorSeats,floorMat,floorBack,.48);
   }
-  return {shell, setLayout(key){for(const [k,g] of Object.entries(shows)) g.visible=k===key;}};
+  return {shell, pickable, standSeats, setShow(on){concert.forEach(g=>{g.visible=on;});},
+    setLayout(key){for(const [k,g] of Object.entries(shows)) g.visible=k===key;}};
 }

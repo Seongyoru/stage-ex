@@ -48,6 +48,26 @@
 .os-pad button:active { background:#61713e; }
 .os-pad [data-direction=up] { grid-column:2; }
 .os-pad [data-direction=left] { grid-column:1; }
+.os-pad :is([data-direction=rise],[data-direction=fall]) { display:none; }
+.os-flying .os-pad :is([data-direction=rise],[data-direction=fall]) { display:grid; color:var(--citron); }
+.os-flying .os-pad [data-direction=rise]::after { content:'+'; }
+.os-flying .os-pad [data-direction=fall]::after { content:'−'; }
+.os-flying .os-pad :is([data-direction=rise],[data-direction=fall]) { grid-auto-flow:column; }
+.os-settings { display:flex; gap:5px; flex-wrap:wrap; }
+.os-section [data-control] { border:1px solid #56625c; border-radius:8px; padding:8px; background:#27302e; color:#e8eee5; font-size:12px; }
+.os-section [data-control][aria-pressed=true] { color:#152019; background:var(--citron); }
+.os-section input[type=range] { width:100%; accent-color:var(--citron); margin:15px 0 0; }
+.os-credits { margin:14px 0; font-size:11px; line-height:1.6; color:#aab6ac; }
+.os-credits a { color:inherit; }
+.os-help { margin-left:auto; background:transparent; color:#d6e1d8; border:1px solid #68766e; border-radius:99px; min-width:30px; height:30px; }
+.os-header .language-select { margin-left:0; }
+@media(max-width:760px){.os-header .os-help { grid-row:2;grid-column:3; } .os-header .os-modes { grid-column:1/-1; grid-row:3; width:100%; box-sizing:border-box; }.os-header .os-help { grid-row:1;grid-column:2; }.os-header h1 { padding-right:28px; grid-row:1; grid-column:2; }.os-modes {justify-content:space-between;} }
+.os-markers { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.os-markers button { position:absolute; pointer-events:auto; transform:translate(-50%,-100%); background:#172622e8; color:#f7f7ee; border:1px solid #c7d3bd; border-radius:5px; font-size:11px; padding:4px 7px; white-space:nowrap; }
+.os-markers button::after { content:''; position:absolute; top:100%; left:50%; height:7px; width:1px; background:#c7d3bd; }
+.os-panel .schedule-drawer { position:static; width:auto; margin:12px 0; }
+@media(max-width:1100px) { .os-header { gap:8px; padding-inline:10px; } .os-modes button { padding:7px 8px; } }
+@media(max-width:760px) { .os-modes { max-width:100%; overflow-x:auto; } .os-modes button { white-space:nowrap; } }
 @media(max-width:760px) {
   .os-header { min-height:auto; display:grid; grid-template-columns:auto 1fr auto; gap:8px 12px; padding:8px 12px; }
   .os-header h1 { font-size:14px; }

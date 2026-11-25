@@ -30,7 +30,7 @@ export function directory() {
       h('div', { class: 'scene-cards' }, venue.shortcuts.map(({ label, params, image }) =>
         h('a', { href: url(params) }, h('img', { src: image, alt: '', loading: 'lazy' }),
           h('span', null, tr(label)), icon('chevRight', 17)))));
-    const feature = venue.id === kArena.id ? h('div', { class: 'venue-layout' }, link, scheduleBanner()) : link;
+    const feature = h('div', { class: 'venue-layout' }, link, scheduleBanner(false, venue.id));
     list.append(h('article', { id: venue.id }, feature, shortcuts));
   }
   const root = h('div', { class: 'directory' }, header, list);

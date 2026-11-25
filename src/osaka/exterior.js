@@ -1,5 +1,7 @@
+import { precinct } from './precinct.js';
+import { stair, stairDistance } from './routes.js';
 import * as T from 'three';
-import { perimeter, radius, rim, straight } from './seats.js';
+import { perimeter, radius, rim } from './seats.js';
 import { deck, ground, innerWall, facade, stairHalf, stairTop, tread, treads, trees, fountain } from './grounds.js';
 
 function masonry(paving) {
@@ -30,16 +32,16 @@ function masonry(paving) {
   return map;
 }
 
-export function buildExterior() {
+export function buildExterior(redraw) {
   const root=new T.Group();
   const solid=color=>new T.MeshStandardMaterial({color,roughness:.82});
   const glow=color=>new T.MeshBasicMaterial({color});
-  const stone=new T.MeshStandardMaterial({map:masonry(false)});
+  const stoneMap=masonry(false);
+  const stone=new T.MeshStandardMaterial({map:stoneMap,bumpMap:stoneMap,bumpScale:.23});
   const tile=new T.MeshStandardMaterial({map:masonry(true)});
   const concrete=solid(0xb1aaa0), bronze=solid(0x464f49), glass=solid(0x496b70);
-  const roof=solid(0xa1abad), roofEdge=solid(0x68847e), seam=solid(0x829395);
   const wood=solid(0x946e50), foliage=[solid(0x587741),solid(0x789056),solid(0x466c4c)];
-  const porcelain=solid(0xe3ddcc), dark=solid(0x323b3e), lamp=glow(0xffebc8);
+  const porcelain=solid(0xe3ddcc), lamp=glow(0xffebc8);
   const cube=new T.BoxGeometry(), crown=new T.IcosahedronGeometry(1,1);
   const cylinder=new T.CylinderGeometry(1,1,1,20);
   const batches=new Map(), pose=new T.Object3D();
@@ -51,14 +53,15 @@ export function buildExterior() {
     geometries.get(geometry).push(pose.matrix.clone());
   }
   const box=(...args)=>instance(cube,...args);
-  function strip(mat,r0,y0,r1,y1,{gap=0,planar=false}={}) {
+  function strip(mat,r0,y0,r1,y1,{gap=0,planar=false,omit}={}) {
     const pts=[],uv=[],idx=[];
     for(let i=0;i<=240;i++){
       const u=i/240*perimeter,a=rim(u,r0-radius),b=rim(u,r1-radius);
       pts.push(a.x,y0,a.z,b.x,y1,b.z);
       if(planar) uv.push(a.x/4,a.z/4,b.x/4,b.z/4);
       else uv.push(u/3.5,y0/3,u/3.5,y1/3);
-      if(i && (!gap||Math.abs(rim(u-perimeter/480,r0-radius).x)>=gap)){
+      const mid=rim(u-perimeter/480,(r0+r1)/2-radius);
+      if(i && (!gap||Math.abs(mid.x)>=gap) && !omit?.(mid)){
         const j=2*i;idx.push(j-2,j-1,j,j,j-1,j+1);
       }
     }
@@ -75,57 +78,18 @@ export function buildExterior() {
     ctx.fillText(text,c.width/2,c.height*.51,c.width*.92);
     const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;
     const mesh=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map}));
-    mesh.position.set(x,y,z);mesh.rotation.y=side>0?0:Math.PI;root.add(mesh);
+    mesh.position.set(x,y,z);mesh.rotation.y=side>0?0:Math.PI;root.add(mesh);return mesh;
   }
-  const plaza=new T.Mesh(new T.PlaneGeometry(300,285),tile);
-  const uv=plaza.geometry.attributes.uv;
-  for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*75,uv.getY(i)*71.25);
-  plaza.rotation.x=-Math.PI/2;plaza.position.y=ground-.018;root.add(plaza);
-  const lawn=solid(0x788757), garden=solid(0x7f925b), shade=solid(0x65785a);
-  box(lawn,0,ground-.26,0,650,.40,650);
-  // Planted islands leave both entrance approaches and the perimeter walk clear.
-  for(const side of [-1,1]){
-    for(const along of [-1,1]){
-      instance(cylinder,garden,side*70,ground+.005,along*75,35,.05,16);
-      instance(cylinder,garden,side*40,ground+.005,along*93,12,.05,6);
-    }
-    instance(cylinder,garden,side*91,ground+.005,0,11,.05,69);
-  }
-  // A distant park canopy and a simplified business district close the horizon.
-  for(let j=0;j<160;j++){
-    const a=j*2.39996,r=140+(j%8)*9,x=r*Math.sin(a),z=r*Math.cos(a);
-    instance(crown,foliage[j%3],x,ground+2+j%4,z,5+j%4,4+j%3,6,j);
-  }
-  const office=solid(0x7296a1),spandrel=solid(0xacc1c0);
-  for(const [x,z,w,h,d] of [[-117,123,17,54,13],[-143,103,14,37,17],[-157,60,19,27,13],[-175,87,16,46,16]]){
-    box(office,x,ground+h/2,z,w,h,d);
-    for(let level=2;level<h;level+=2.2)box(spandrel,x,ground+level,z,w+.08,.22,d+.08);
-  }
-
-  strip(stone,facade,ground-.08,facade,deck+.04);
-  strip(tile,innerWall,deck,facade,deck,{planar:true});
+  const shade=solid(0x65785a);
+  precinct({root,box,strip,sign,stone,tile,bronze,concrete,wood,porcelain,lamp,foliage,instance,crown,cylinder},redraw);
+  strip(stone,facade+1.25,ground-.08,facade,deck+.04);
+  strip(tile,innerWall,deck,stair.inner,deck,{planar:true});
+  strip(tile,stair.inner,deck,stair.outer,deck,{planar:true,omit:p=>Math.abs(stairDistance(p.x,p.z))<14});
+  strip(tile,stair.outer,deck,facade,deck,{planar:true});
   strip(glass,facade,deck,facade,deck+3.7,{gap:4.65});
   strip(bronze,facade+.05,deck+3.7,facade+.05,deck+4);
   strip(porcelain,facade,deck+4,facade,deck+5.15);
   strip(concrete,innerWall,deck+4.1,facade,deck+4.1,{planar:true});
-  strip(roofEdge,facade+.55,deck+5.16,facade+.55,deck+5.55);
-  const crownY=r=>deck+5.57+8*(1-(r/(facade+.55))**2);
-  for(let k=0;k<16;k++){
-    const a=(facade+.55)*(1-k/16),b=(facade+.55)*(1-(k+1)/16);
-    strip(roof,a,crownY(a),b,crownY(b),{planar:true});
-  }
-  const seamPoints=[];
-  for(let x=-76;x<=76;x+=1.65){
-    const end=Math.max(0,Math.abs(x)-straight),span=Math.sqrt((facade+.55)**2-end**2);
-    for(let k=0;k<24;k++)for(const j of [k,k+1]){
-      const z=span*(j/12-1);
-      seamPoints.push(x,crownY(Math.hypot(end,z))+.035,z);
-    }
-  }
-  const lines=new T.BufferGeometry();
-  lines.setAttribute('position',new T.Float32BufferAttribute(seamPoints,3));
-  root.add(new T.LineSegments(lines,new T.LineBasicMaterial({color:seam.color,transparent:true,opacity:.66})));
-
   for(let i=0;i<112;i++){
     const u=i/112*perimeter,w=rim(u,facade-radius);
     if(Math.abs(w.x)>4.6) box(bronze,w.x,deck+1.87,w.z,.14,3.74,.2,Math.atan2(w.nx,w.nz));
@@ -136,6 +100,7 @@ export function buildExterior() {
   }
   for(const side of [-1,1]){
     // Open glass entrance bays, stair landings and a stone parapet on either side.
+    if(side>0){
     box(concrete,0,(deck+ground)/2,side*(stairTop+facade)/2,stairHalf*2,deck-ground,stairTop-facade);
     for(let k=0;k<treads;k++){
       const h=(treads-k)*(deck-ground)/treads;
@@ -156,6 +121,7 @@ export function buildExterior() {
       for(let k=0;k<=treads;k+=5) box(bronze,x,deck-k*(deck-ground)/treads+.5,side*(stairTop+k*tread),.065,.8,.065);
       box(bronze,edge*4.5,deck+1.9,side*facade,.26,3.8,.25);
     }
+    }
     box(bronze,0,deck+3.62,side*(facade+.88),21,.25,2.6);
     for(const x of [-15,-7,7,15]){
       box(porcelain,x,deck+1.96,side*(facade-1.94),.34,3.92,.42);
@@ -170,9 +136,6 @@ export function buildExterior() {
     }
     sign(side<0?'スタンド席   G  /  H':'スタンド席   A  /  N',6.7,.64,0,deck+3.85,side*(innerWall+.08),side);
     sign(side<0?'北玄関   EXIT':'南玄関   EXIT',5,.62,0,deck+3.33,side*(facade-.08),-side);
-    box(wood,-11,deck+.52,side*(facade-1.05),7.8,1.04,1.55);
-    box(porcelain,-11,deck+1.06,side*(facade-1.05),8,.12,1.62);
-    sign('売店   KIOSK',4,.65,-11,deck+2.55,side*(facade-.52),-side);
     for(let j=0;j<10;j++)for(let k=0;k<3;k++){
       const x=8+j*.63,y=deck+.35+k*.68;
       box(k%2?porcelain:concrete,x,y,side*(facade-.65),.6,.65,.75);
@@ -181,8 +144,14 @@ export function buildExterior() {
     sign('コインロッカー   LOCKERS',6,.53,11,deck+2.4,side*(facade-.68),-side);
   }
   // A representative fountain, park planting and plaza lamps frame the approach.
+  const paving=new T.CircleGeometry(17,64);paving.rotateX(-Math.PI/2);
+  const uv=paving.attributes.uv,p=paving.attributes.position;
+  for(let i=0;i<uv.count;i++)uv.setXY(i,p.getX(i)/4,p.getZ(i)/4);
+  const roundel=new T.Mesh(paving,tile);roundel.position.set(fountain.x,ground+.052,fountain.z);root.add(roundel);
   instance(cylinder,concrete,fountain.x,ground+.23,fountain.z,fountain.radius,.46,fountain.radius);
-  instance(cylinder,solid(0x75a9a8),fountain.x,ground+.47,fountain.z,5.13,.03,5.13);
+  instance(cylinder,solid(0x75a9a8),fountain.x,ground+.47,fountain.z,fountain.radius-.32,.03,fountain.radius-.32);
+  instance(cylinder,solid(0x813f35),fountain.x,ground+8.2,fountain.z,.32,16.4,.32);
+  instance(cylinder,bronze,fountain.x,ground+16.45,fountain.z,.44,.18,.44);
   const waterLines=[];
   for(let j=0;j<72;j++){
     const a=j*Math.PI/36,outer=j%3===0;
