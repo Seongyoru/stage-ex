@@ -34,15 +34,27 @@ function ring(parent, material, inside, y1, outside, y2, openings = false) {
   material.side = T.DoubleSide;
   parent.add(new T.Mesh(g,material));
 }
-function chairs(parent, places, material, backMaterial, size) {
-  const cushions = new T.InstancedMesh(unit, material, places.length);
+function chairs(parent, places, material, backMaterial, size, folding=false) {
+  // Round the upholstered edges once, then instance the same meshes across each bank.
+  const pad=new T.Shape();
+  pad.moveTo(-.42,-.5);pad.lineTo(.42,-.5);pad.quadraticCurveTo(.5,-.5,.5,-.38);
+  pad.lineTo(.48,.38);pad.quadraticCurveTo(.47,.5,.35,.5);pad.lineTo(-.35,.5);
+  pad.quadraticCurveTo(-.47,.5,-.48,.38);pad.lineTo(-.5,-.38);pad.quadraticCurveTo(-.5,-.5,-.42,-.5);
+  const cushion=new T.ExtrudeGeometry(pad,{depth:.85,bevelEnabled:false,curveSegments:2});
+  cushion.rotateX(-Math.PI/2);cushion.translate(0,-.43,0);
+  const cushions=new T.InstancedMesh(folding?unit:cushion,material,places.length);
   const outline=new T.Shape();
-  outline.moveTo(-.44,0);outline.lineTo(.44,0);outline.lineTo(.5,.8);
-  outline.lineTo(.40,.96);outline.lineTo(.22,1);outline.lineTo(-.22,1);
-  outline.lineTo(-.40,.96);outline.lineTo(-.5,.8);outline.closePath();
-  const back=new T.ExtrudeGeometry(outline,{depth:1,bevelEnabled:false});
-  const backs = new T.InstancedMesh(back, backMaterial, places.length);
+  outline.moveTo(-.40,0);outline.lineTo(.40,0);outline.lineTo(.49,.67);
+  outline.quadraticCurveTo(.52,.97,.32,1);outline.quadraticCurveTo(0,1.08,-.32,1);
+  outline.quadraticCurveTo(-.52,.97,-.49,.67);outline.closePath();
+  const back=new T.ExtrudeGeometry(outline,{depth:1,bevelEnabled:false,curveSegments:3});
+  // A shallow wrap at the two shoulders gives the backrest a readable highlight.
+  const position=back.attributes.position;
+  for(let i=0;i<position.count;i++)position.setZ(i,position.getZ(i)-2.5*position.getX(i)**2);
+  back.computeVertexNormals();
+  const backs=new T.InstancedMesh(folding?unit:back,backMaterial,places.length);
   const supports=new T.InstancedMesh(unit,paint(0x393b3f),places.length);
+  const arms=folding?null:new T.InstancedMesh(unit,paint(0x35373b),places.length);
   const tint=new T.Color();
   for (const [i,p] of places.entries()) {
     const angle = Math.atan2(p.nx,p.nz);
@@ -51,13 +63,18 @@ function chairs(parent, places, material, backMaterial, size) {
     frame.scale.set(size,.16,.4); frame.updateMatrix(); cushions.setMatrixAt(i,frame.matrix);
     frame.position.set(p.x,p.y+.19,p.z);
     frame.scale.set(.13,.38,.18);frame.updateMatrix();supports.setMatrixAt(i,frame.matrix);
-    frame.position.set(p.x+.16*p.nx,p.y+.44,p.z+.16*p.nz);
+    if(arms){
+      frame.position.set(p.x+p.nz*size*.52,p.y+.61,p.z-p.nx*size*.52);
+      frame.scale.set(.046,.048,.30);frame.updateMatrix();arms.setMatrixAt(i,frame.matrix);
+    }
+    frame.position.set(p.x+.16*p.nx,p.y+(folding?.65:.44),p.z+.16*p.nz);
     frame.rotateX(.12);
     frame.scale.set(size,.42,.065); frame.updateMatrix(); backs.setMatrixAt(i,frame.matrix);
     tint.setScalar(.85+.15*((i*17)%29)/28);
     backs.setColorAt(i,tint);cushions.setColorAt(i,tint);
   }
   parent.add(cushions,backs,supports);
+  if(arms)parent.add(arms);
   return [cushions,backs];
 }
 function blockSigns(parent) {
@@ -76,7 +93,7 @@ function blockSigns(parent) {
     g.rotation.y=Math.atan2(left.nx+right.nx,left.nz+right.nz);
     box(g,signs,0,.75,.6,2.7,1.5,.55);
     const c=document.createElement('canvas');c.width=128;c.height=64;
-    const ctx=c.getContext('2d');ctx.fillStyle='#33383a';ctx.fillRect(0,0,128,64);
+    const ctx=c.getContext('2d');ctx.fillStyle='#215345';ctx.fillRect(0,0,128,64);
     ctx.fillStyle='#eee7d4';ctx.font='bold 42px Arial';ctx.textAlign='center';ctx.fillText(name,64,47);
     const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;
     const placard=new T.Mesh(new T.PlaneGeometry(1.7,.85),new T.MeshBasicMaterial({map}));
@@ -121,8 +138,31 @@ export function buildHall(scene,redraw) {
     if(r<22) ring(scene,riser,next,rowHeight(r),next,rowHeight(r+1));
   }
   const standSeats=[...seats.values()];
-  const pickable=chairs(scene,standSeats,paint(0xb74624),paint(0xd3542e),.48);
+  const upholstery=finish(paint(0xffc6a1),'seat_fabric_vermilion');
+  const pickable=chairs(scene,standSeats,upholstery,paint(0xd95731),.48);
   blockSigns(scene);
+  // Add an intermediate tread in each actual seat-row gap, with a contrasting nosing.
+  const steps=[],edges=[];
+  for(const [block,rows] of byBlock){
+    if(block==='BOX')continue;
+    for(const [r,row] of rows){
+      if(r===12||r===22)continue;
+      for(let i=1;i<row.length;i++){
+        const a=row[i-1],b=row[i],gap=Math.hypot(b.x-a.x,b.z-a.z);
+        if(gap<1.35||gap>3.8)continue;
+        const nx=(a.nx+b.nx)/2,nz=(a.nz+b.nz)/2,x=(a.x+b.x)/2,z=(a.z+b.z)/2;
+        frame.rotation.set(0,Math.atan2(nx,nz),0);
+        frame.position.set(x+.22*nx,a.y+.10,z+.22*nz);frame.scale.set(gap-.59,.2,.43);
+        frame.updateMatrix();steps.push(frame.matrix.clone());
+        frame.position.set(x+.045*nx,a.y+.204,z+.045*nz);frame.scale.set(gap-.61,.008,.046);
+        frame.updateMatrix();edges.push(frame.matrix.clone());
+      }
+    }
+  }
+  for(const [mat,matrices] of [[concrete,steps],[paint(0xcebe95),edges]]){
+    const mesh=new T.InstancedMesh(unit,mat,matrices.length);
+    matrices.forEach((matrix,i)=>mesh.setMatrixAt(i,matrix));scene.add(mesh);
+  }
   ring(scene,paint(0x393b42),-.56,.12,-.56,1.60,'arena');
   ring(scene,paint(0xbcab91),-.59,1.63,-.47,1.63,'arena');
   const fascia=paint(0xe1dcd2);
@@ -131,7 +171,25 @@ export function buildHall(scene,redraw) {
   const shell=new T.Group();scene.add(shell);
   const backWall=paint(0x42424c), wallDepth=rowDepth(22)+2.7;
   ring(shell,backWall,wallDepth,rowHeight(22),wallDepth,rowHeight(22)+3.6,true);
-  ring(shell,backWall,wallDepth,rowHeight(22)+3.6,wallDepth,18.6);
+  const acoustic=finish(paint(0xbbaba1),'acoustic_ribbed_dark');
+  ring(shell,acoustic,wallDepth,rowHeight(22)+3.6,wallDepth,18.6);
+  const galleryPosts=[],galleryLamps=[];
+  for(let i=0;i<90;i++){
+    const p=rim(i*perimeter/90,wallDepth-.10);
+    frame.rotation.set(0,Math.atan2(p.nx,p.nz),0);
+    frame.position.set(p.x,16.7,p.z);frame.scale.set(.12,3.23,.18);
+    frame.updateMatrix();galleryPosts.push(frame.matrix.clone());
+    if(i%3===0){
+      frame.position.set(p.x-.20*p.nx,16.02,p.z-.20*p.nz);
+      frame.scale.set(.92,.075,.24);frame.updateMatrix();galleryLamps.push(frame.matrix.clone());
+    }
+  }
+  for(const [mat,matrices] of [[metal,galleryPosts],[light(0xffe8b9),galleryLamps]]){
+    const mesh=new T.InstancedMesh(unit,mat,matrices.length);
+    matrices.forEach((matrix,i)=>mesh.setMatrixAt(i,matrix));shell.add(mesh);
+  }
+  ring(shell,metal,wallDepth-.20,14.75,wallDepth,14.88);
+
   ring(shell,finish(paint(0x888d94),'acoustic_ribbed_dark'),rowDepth(22)+2.7,18.6,-24.7,21.6);
   // Exposed curved roof ribs read from a seat; the overview cuts away the roof.
   const steel=paint(0x72757d);
@@ -147,9 +205,7 @@ export function buildHall(scene,redraw) {
     for(let i=0;i<10;i++) {
       const z0=end*(i/5-1),z1=end*((i+1)/5-1);
       const height=z=>20.6-2.9*(z/end)**2;
-      const dy=height(z1)-height(z0);
-      const rib=box(shell,steel,x,(height(z1)+height(z0))/2,(z0+z1)/2,.19,.26,Math.hypot(z1-z0,dy));
-      rib.rotation.x=-Math.atan2(dy,z1-z0);
+      beam(new T.Vector3(x,height(z0),z0),new T.Vector3(x,height(z1),z1),.23);
       const v=(z,y)=>new T.Vector3(x,y,z);
       beam(v(z0,height(z0)-1.15),v(z1,height(z1)-1.15),.085);
       beam(v(z0,height(z0)-1.15),v((z0+z1)/2,(height(z0)+height(z1))/2),.069);
@@ -195,7 +251,13 @@ export function buildHall(scene,redraw) {
       const display=new T.Mesh(new T.PlaneGeometry(w*.92,6.35),led);
       display.position.set(0,5.35,-d/2+.42);stage.add(display);
       for(const side of [-1,1]) {
-        box(stage,stageDark,side*(w/2+.7),4.8,-1,1.1,5.4,1);
+        for(let module=0;module<7;module++){
+          const y=7.15-module*.64,z=-1+module*module*.009;
+          const enclosure=box(stage,stageDark,side*(w/2+.7),y,z,1.12,.62,.78);
+          enclosure.rotation.x=-module*.045;
+          const grille=box(stage,metal,side*(w/2+.7),y,z+.37,1.01,.49,.045);
+          grille.rotation.x=enclosure.rotation.x;
+        }
         box(stage,teal,side*(w/2-.3),4.9,-d/2+.55,.11,7.1,.12);
       }
       const boomY=9.2,boomZ=1.8;
@@ -238,7 +300,7 @@ export function buildHall(scene,redraw) {
       const len=Math.hypot(dx,dz);
       floorSeats.push({x,z,y:0,nx:dx/len,nz:dz/len});
     }
-    chairs(group,floorSeats,floorMat,floorBack,.48);
+    chairs(group,floorSeats,floorMat,floorBack,.48,true);
   }
   return {shell, pickable, standSeats, setShow(on){concert.forEach(g=>{g.visible=on;});},
     setLayout(key){for(const [k,g] of Object.entries(shows)) g.visible=k===key;}};

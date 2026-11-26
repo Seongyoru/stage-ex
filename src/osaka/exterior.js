@@ -18,6 +18,16 @@ function masonry(paving) {
       const tone=Math.round((paving?177:159)+random()*(paving?14:36));
       ctx.fillStyle='rgb('+[tone+4,tone+3,tone-2]+')';
       ctx.beginPath();
+      if(!paving){
+        const cut=7+random()*13;
+        ctx.moveTo(x+cut,y+3);ctx.lineTo(x+width-cut*.7,y+2);
+        ctx.lineTo(x+width-2,y+cut);ctx.lineTo(x+width-4,y+height-cut*.55);
+        ctx.lineTo(x+width-cut,y+height-2);ctx.lineTo(x+cut*.7,y+height-4);
+        ctx.lineTo(x+2,y+height-cut);ctx.lineTo(x+3,y+cut);ctx.closePath();ctx.fill();
+        const wash=ctx.createLinearGradient(x,y,x+width*.45,y+height);
+        wash.addColorStop(0,'rgba(246,242,228,.29)');wash.addColorStop(.5,'rgba(184,177,164,.03)');wash.addColorStop(1,'rgba(51,60,57,.25)');
+        ctx.fillStyle=wash;ctx.fill();continue;
+      }
       ctx.moveTo(x+2,y+3);ctx.lineTo(x+width-4,y+2);
       ctx.lineTo(x+width-2,y+height-6);ctx.lineTo(x+width-7,y+height-2);
       ctx.lineTo(x+3,y+height-2);ctx.closePath();ctx.fill();
@@ -86,7 +96,9 @@ export function buildExterior(redraw) {
   strip(tile,innerWall,deck,stair.inner,deck,{planar:true});
   strip(tile,stair.inner,deck,stair.outer,deck,{planar:true,omit:p=>Math.abs(stairDistance(p.x,p.z))<14});
   strip(tile,stair.outer,deck,facade,deck,{planar:true});
+  glass.roughness=.28;glass.metalness=.23;
   strip(glass,facade,deck,facade,deck+3.7,{gap:4.65});
+  for(const height of [.24,2.70])strip(bronze,facade+.035,deck+height,facade+.035,deck+height+.07,{gap:4.65});
   strip(bronze,facade+.05,deck+3.7,facade+.05,deck+4);
   strip(porcelain,facade,deck+4,facade,deck+5.15);
   strip(concrete,innerWall,deck+4.1,facade,deck+4.1,{planar:true});
@@ -166,7 +178,11 @@ export function buildExterior(redraw) {
     instance(cylinder,shade,x,ground+.045,z,2.25,.018,1.8,i);
     instance(cylinder,concrete,x,ground+.18,z,1.4,.36,1.4);
     instance(cylinder,wood,x,ground+2.2,z,.23,4.4,.23);
-    for(let j=0;j<3;j++) instance(crown,foliage[(i+j)%3],x+Math.cos(i+j*2)*.9,ground+4.1+j*.75,z+Math.sin(i+j*2)*.9,2,1.9,2,i+j);
+    for(let j=0;j<6;j++){
+      const a=i*2.399+j*2.21,spread=1.15+.48*Math.sin(i+j),h=4.55+.34*j+.43*Math.cos(i);
+      instance(cylinder,wood,x+Math.sin(a)*.55,ground+h-1.14,z+Math.cos(a)*.55,.11,2.1,.11,a,.52);
+      instance(crown,foliage[(i+j)%3],x+Math.sin(a)*spread,ground+h,z+Math.cos(a)*spread,1.75,1.3+.12*j,1.61,a);
+    }
   });
   for(const x of [-23,23])for(const z of [-78,78]){
     instance(cylinder,bronze,x,ground+2.4,z,.11,4.8,.11);

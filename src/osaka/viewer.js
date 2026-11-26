@@ -1,8 +1,8 @@
 import * as T from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { LookControls } from '../app/rig.js';
-import { h } from '../app/dom.js';
-import { language, languageSelect, preference, remember, tr } from '../app/i18n.js';
+import { h, icon, fmt } from '../app/dom.js';
+import { language, preference, remember, tr } from '../app/i18n.js';
 import { blocks, byBlock, layouts, seats } from './seats.js';
 import { buildHall } from './hall.js';
 import { makePlan } from './plan.js';
@@ -11,7 +11,7 @@ import { facade, innerWall, places, radial, zone } from './grounds.js';
 import { gateAt, upper } from './routes.js';
 import { walking } from './walking.js';
 import { nightLights, setupSun, skyTexture } from './atmosphere.js';
-import { scheduleBanner } from '../app/schedule.js';
+import { viewerHeader, mountSchedule, joystick, seatNavigation, segmented, switchRow } from '../app/viewer-shell.js';
 import './viewer.css';
 
 export function start() {
@@ -82,20 +82,20 @@ export function start() {
     mode=next;update();
     if(mode==='walk'||mode==='fly')walker.focus();
   }
-  const modeButtons=Object.entries({overview:'전체 보기',exterior:'외관',walk:'걷기',fly:'날기',section:'단면',floor:'층별',seat:'좌석 시야'}).map(([key,label])=>
-    h('button',{type:'button','data-mode':key,onClick:()=>changeMode(key)},tr(label)));
+  const root=document.querySelector('#ui');
   const capacity=h('p',{class:'os-capacity'});
   const sightline=h('p',{class:'os-sightline'},tr('이 좌석은 선택한 무대 뒤쪽입니다. 예매 전 공연별 좌석표를 확인하세요.'));
   const badge=h('span',{class:'os-badge','aria-live':'polite'});
   const hint=h('span',{class:'os-hint'},tr('드래그로 회전 · 휠 또는 두 손가락으로 확대'));
   const sit=h('button',{class:'os-sit',type:'button',onClick:interact},h('kbd',null,'E'),tr('가까운 좌석에 앉기'));
-  const pad=h('div',{class:'os-pad','aria-label':tr('이동')});
+  const lift=h('div',{class:'flight-lift'});
   const walker=walking(camera,look,canvas,moveWalk,saveWalk,interact,()=>layout,(x,z,y)=>{
     const g=y<1&&gateAt(x,z,2.65);return g&&Math.abs(radial(x,z)-47.9)<.4&&(grounds?.userData.doors.get(g.id)?.amount??0)<.92;
   });
-  for(const [d,arrow,label] of [['up','↑','앞으로'],['left','←','왼쪽으로'],['down','↓','뒤로'],['right','→','오른쪽으로'],['rise','↑','상승'],['fall','↓','하강']]){
-    const button=h('button',{type:'button','aria-label':tr(label),'data-direction':d},arrow);
-    walker.bind(button,d);pad.append(button);
+  const joy=joystick((x,y)=>walker.steer(x,y));
+  for(const [dir,label] of [['rise','상승'],['fall','하강']]){
+    const button=h('button',{type:'button','aria-label':tr(label),'data-direction':dir},icon(dir==='rise'?'chevUp':'chevDown'));
+    walker.bindLift(button,dir);lift.append(button);
   }
   canvas.addEventListener('pointerup',()=>{if(mode==='walk'||mode==='fly')saveWalk();});
   function moveWalk(position){
@@ -107,6 +107,7 @@ export function start() {
     bowl.visible=r<facade+5 || (r<95 && Math.abs(position.x)<16);
     nearGate=(!flying&&position.y<1&&Math.abs(r-47.9)<3.8)?gateAt(position.x,position.z,3.3):null;
     sit.hidden=flying||(!nearGate&&(r>=innerWall||position.y<upper-.5));
+    doorHud.hidden=sit.hidden;hud.hidden=!sit.hidden;
     const msg=nearGate?tr(grounds.userData.doors.get(nearGate.id).open?'게이트 닫기':'게이트 열기')+' · '+nearGate.id:tr('가까운 좌석에 앉기');
     if(sit.lastChild.textContent!==msg)sit.lastChild.textContent=msg;
     redraw();
@@ -159,8 +160,38 @@ export function start() {
     changeMode('seat');
   };
   number.onchange=()=>{seat=seats.get([block.value,row.value,number.value].join('-'));changeMode('seat');};
-  const stage=h('section',{class:'os-viewport'},canvas,badge,hint,pad,sit);
-  const markerLayer=h('div',{class:'os-markers'});stage.append(markerLayer);
+  const stage=canvas;
+  const doorHud=h('div',{class:'hud hud-door'},sit);
+  const hud=h('div',{class:'hud'},h('div',{class:'hud-hint'},badge,' · ',hint));
+  const seatReadout=h('div',{class:'hud-main'});
+  function stepSeat(offset){
+    const same=byBlock.get(seat.block).get(seat.row);
+    const next=same[same.indexOf(seat)+offset];
+    if(next){seat=next;changeMode('seat');}
+  }
+  function stepRow(offset){
+    const rows=byBlock.get(seat.block),ordered=[...rows.keys()];
+    const next=rows.get(ordered[ordered.indexOf(seat.row)+offset]);
+    if(next){
+      seat=next.reduce((best,s)=>Math.abs(s.number-seat.number)<Math.abs(best.number-seat.number)?s:best);
+      changeMode('seat');
+    }
+  }
+  function faceStage(){
+    const l=layouts[layout];
+    look.setDirection(new T.Vector3(l.x,2.25,l.z).sub(camera.position));redraw();
+  }
+  const seatHud=h('div',{class:'hud hud-seat'},seatReadout,seatNavigation(stepRow,stepSeat,faceStage));
+  window.addEventListener('keydown',event=>{
+    if(mode!=='seat'||event.altKey||event.metaKey||event.ctrlKey||document.querySelector('dialog[open]')||
+       event.target.closest?.('input, select, textarea, [role=slider]'))return;
+    const moves={ArrowUp:()=>stepRow(-1),ArrowDown:()=>stepRow(1),ArrowLeft:()=>stepSeat(-1),ArrowRight:()=>stepSeat(1)};
+    if(moves[event.key]){event.preventDefault();moves[event.key]();}
+  });
+  const needle=h('div',{class:'needle'},h('b',null,'N'));
+  const compass=h('button',{class:'compass',type:'button',title:tr('북쪽 방향 · 눌러서 전경으로'),onClick:()=>changeMode('exterior')},needle);
+  const direction=new T.Vector3();
+  const markerLayer=h('div',{class:'os-markers'});document.body.insertBefore(markerLayer,root);
   const projection=new T.Vector3();
   const markers=Object.entries(places).map(([key,p])=>{
     const button=h('button',{type:'button',onClick:()=>startAt(key)},tr(p.label));
@@ -168,6 +199,11 @@ export function start() {
   });
   function projectLabels(){
     camera.updateMatrixWorld();
+    camera.getWorldDirection(direction);
+    // North projected onto the two horizontal axes of the Osaka CityGML frame.
+    const northX=-.71014445,northZ=-.70405601;
+    needle.style.transform='rotate('+Math.atan2(direction.x*northZ-direction.z*northX,
+      direction.x*northX+direction.z*northZ)+'rad)';
     for(const {key,p,button} of markers){
       let visible=labels && ((mode==='exterior'&&['north','plaza','south'].includes(key)) ||
         (mode==='floor'&&(floor===1?key==='arena':['north','south','east','stand'].includes(key))));
@@ -182,19 +218,23 @@ export function start() {
   function startAt(key){
     walker.leave();place=key;savedPose=null;mode='walk';update();walker.focus();
   }
-  const section=(label,...children)=>h('section',{class:'os-section'},h('h2',null,tr(label)),...children);
-  const routes=section('걷기 시작 위치',h('div',{class:'os-places'},Object.entries(places).map(([key,p])=>
-    h('button',{type:'button','data-start':key,onClick:()=>startAt(key)},tr(p.label)))),
+  const section=(label,...children)=>h('section',{class:'pane os-section'},h('h2',null,tr(label)),...children);
+  const routes=section('출발 지점',h('div',{class:'list'},Object.entries(places).map(([key,p])=>
+    h('button',{type:'button',class:'list-item','data-start':key,onClick:()=>startAt(key)},tr(p.label)))),
     h('p',{class:'os-note'},tr('북쪽 로비에서 스탠드로 직진하거나, 동쪽 연결 계단을 내려가 1층 게이트를 여세요.')),
     h('p',{class:'os-note'},tr('외관 치수와 실내 마감은 공개 자료를 바탕으로 재구성했습니다.'),' ',
       h('a',{href:'https://www.osaka-johall.com/floorguide/',target:'_blank',rel:'noopener'},tr('공식 층별 안내'),' ↗')));
   const stateButton=(id,label,fn)=>h('button',{type:'button','data-control':id,onClick:fn},tr(label));
-  const nightButton=stateButton('night','밤',()=>{night=!night;appearance();});
-  const showButton=stateButton('show','공연 조명',()=>{show=!show;appearance();});
-  const qualityButton=stateButton('quality','저사양 모드',()=>{low=!low;appearance();});
-  const labelButton=stateButton('labels','라벨',()=>{labels=!labels;appearance();});
-  const roofButton=stateButton('roof','지붕 열기',()=>{roofOpen=!roofOpen;update();});
-  const sceneTools=section('장면',h('div',{class:'os-settings'},nightButton,showButton,labelButton,roofButton,qualityButton));
+  const time=segmented([{value:false,label:h('span',null,icon('sun',15),tr(' 낮'))},
+    {value:true,label:h('span',null,icon('moon',15),tr(' 밤'))}],night,value=>{night=value;appearance();});
+  const quality=segmented([{value:false,label:tr('높음')},{value:true,label:tr('낮음')}],low,value=>{low=value;appearance();});
+  const showSwitch=switchRow(tr('공연 조명'),show,value=>{show=value;appearance();});
+  const labelSwitch=switchRow(tr('라벨'),labels,value=>{labels=value;appearance();});
+  const roofSwitch=switchRow(tr('지붕 열기'),roofOpen,value=>{roofOpen=value;update();});
+  const sceneTools=h('div',{class:'scene'},
+    h('div',{class:'time-row'},h('span',null,tr('시간대')),time),
+    h('details',{class:'group'},h('summary',null,icon('settings',16),tr('장면 설정')),
+      showSwitch,roofSwitch,labelSwitch,h('div',{class:'inline'},h('span',null,tr('품질')),quality)));
   const help=h('dialog',{class:'quick-guide','aria-label':tr('조작 안내')},h('h2',null,tr('조작 안내')),
     h('ul',null,[
       ['↻','전체 보기','드래그로 회전 · 휠 또는 두 손가락으로 확대'],
@@ -205,13 +245,13 @@ export function start() {
     h('button',{type:'button',class:'guide-start',onClick:()=>help.close()},tr('닫기')));
   help.addEventListener('keydown',e=>e.stopPropagation());
   help.addEventListener('close',()=>remember('osaka-guide','1'));
-  const helpButton=h('button',{type:'button',class:'os-help',onClick:()=>help.showModal(),'aria-label':tr('조작 안내')},'?');
   const axisButton=stateButton('axis','절단 방향',()=>{axis=axis==='x'?'z':'x';inspection();});
   const slider=h('input',{type:'range',min:-65,max:65,value:cut,'aria-label':tr('단면 위치'),
     onInput:e=>{cut=Number(e.target.value);inspection();}});
-  const sections=section('단면',axisButton,slider);
+  const sections=section('단면',h('div',{class:'list'},axisButton),slider);
+  axisButton.className='list-item';
   const floors=[1,2].map(n=>stateButton('level'+n,n===1?'1층 아레나':'2층 스탠드',()=>{floor=n;inspection();}));
-  const floorPanel=section('층별',h('div',{class:'os-settings'},floors));
+  const floorPanel=section('층 선택',h('div',{class:'list levels'},floors));
   function inspection(){
     renderer.clippingPlanes=[];
     if(mode==='section'){
@@ -220,12 +260,12 @@ export function start() {
     }else if(mode==='floor'){
       clip.normal.set(0,-1,0);clip.constant=floor===1?2.75:upper+2.6;
       bottom.constant=floor===1?.1:-upper+.12;renderer.clippingPlanes=[clip,bottom];
-      floors.forEach((b,i)=>b.setAttribute('aria-pressed',i+1===floor));badge.textContent=tr(floor===1?'1층 아레나':'2층 스탠드');
+      floors.forEach((b,i)=>{b.className='list-item'+(i+1===floor?' on':'');b.setAttribute('aria-pressed',i+1===floor);});badge.textContent=tr(floor===1?'1층 아레나':'2층 스탠드');
     }
     writeUrl();redraw();
   }
   function lightLevels(insideShow){
-    ambient.intensity=insideShow?.38:night?.64:1.65;sun.intensity=insideShow?.42:night?.48:2.15;
+    ambient.intensity=insideShow?.59:night?.64:1.65;sun.intensity=insideShow?.58:night?.48:2.15;
   }
   function appearance(){
     const outside=['walk','fly','exterior','section','floor'].includes(mode);
@@ -237,23 +277,66 @@ export function start() {
     renderer.shadowMap.enabled=!low&&['exterior','fly','walk'].includes(mode);
     renderer.shadowMap.needsUpdate=true;
     renderer.setPixelRatio(low?1:Math.min(devicePixelRatio,1.75));
-    hall.setShow(show);nightButton.setAttribute('aria-pressed',night);showButton.setAttribute('aria-pressed',show);
-    qualityButton.setAttribute('aria-pressed',low);writeUrl();redraw();
-    labelButton.setAttribute('aria-pressed',labels);roofButton.hidden=mode!=='exterior';roofButton.setAttribute('aria-pressed',roofOpen);
+    hall.setShow(show);time.setValue(night);quality.setValue(low);
+    showSwitch.input.checked=show;labelSwitch.input.checked=labels;
+    roofSwitch.hidden=mode!=='exterior';roofSwitch.input.checked=roofOpen;
+    writeUrl();redraw();
   }
   const credits=h('div',{class:'os-credits'},h('a',{href:'https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2022',target:'_blank',rel:'noopener'},'© MLIT PLATEAU · Osaka 2022'),
     ' / ',h('a',{href:'https://www.mlit.go.jp/plateau/',target:'_blank',rel:'noopener'},'PLATEAU-Ortho 2024'));
-  const panel=h('aside',{class:'os-panel'},sections,floorPanel,routes,
-    section('무대 배치',h('div',{class:'os-layouts'},stages),capacity),
-    section('내 좌석 찾기',plan.root,h('div',{class:'os-selectors'},field('블록',block),field('열',row),field('좌석 번호',number)),sightline),
-    sceneTools,scheduleBanner(true,'osaka-jo-hall'),credits,h('p',{class:'os-note'},tr('플로어 좌석과 무대 연출은 공연마다 달라집니다. 단차와 눈높이는 추정값입니다.'),' ',
-      h('a',{href:'https://www.osaka-johall.com/seat/',target:'_blank',rel:'noopener'},tr('공식 좌석표'),' ↗')));
-  const body=h('main',{class:'os-hall'},
-    h('header',{class:'os-header'},h('a',{class:'wordmark',href:'?lang='+language,'aria-label':tr('공연장 선택')},'Stage ',h('i',null,'EX')),
-      h('h1',{lang:'en'},'Osaka-jo Hall'),h('div',{class:'os-modes'},modeButtons),
-      helpButton,languageSelect(code=>{const url=new URL(location.href);url.searchParams.set('lang',code);location.assign(url);})),
-    h('div',{class:'os-body'},stage,panel));
-  document.body.append(body,help);
+  const seatPanel=section('좌석 선택',h('div',{class:'os-selectors'},field('블록',block),field('열',row),field('좌석 번호',number)),
+    h('div',{class:'seatmap-wrap'},plan.root),sightline);
+  const layoutPanel=section('무대 배치',h('div',{class:'seg os-layouts'},stages),capacity);
+  const cards=[['exterior','외부 시점','os-facade'],['overview','내부 시점','osaka-jo-hall']].map(([id,title,image])=>
+    h('button',{class:'view-card',type:'button','data-view':id,onClick:()=>changeMode(id)},
+      h('img',{src:'./venues/'+image+'.webp',alt:''}),h('span',null,tr(title)),icon('check',14)));
+  const explorePanel=section('시점 선택',h('div',{class:'view-cards'},cards));
+  const flightStarts=[
+    ['분수 광장',places.plaza.x,29,places.plaza.z,0,10,-58],
+    ['외관',95,49,-134,0,11,0],
+    ['스탠드 통로',0,15,39,0,2,0],
+  ];
+  const flyPanel=section('비행 출발점',h('div',{class:'list'},flightStarts.map(([name,x,y,z,tx,ty,tz])=>
+    h('button',{class:'list-item',type:'button',onClick:()=>{
+      walker.leave();
+      flyPose={x,y,z,yaw:Math.atan2(x-tx,z-tz),pitch:Math.atan2(ty-y-1.62,Math.hypot(x-tx,z-tz))};
+      mode='fly';update();walker.focus();
+    }},tr(name)))),h('p',{class:'hint'},tr('하늘에서 공연장과 광장을 자유롭게 둘러보세요.')));
+  const panelScroll=h('div',{class:'panel-scroll'},explorePanel,seatPanel,routes,flyPanel,sections,floorPanel,layoutPanel,sceneTools);
+  const panel=h('aside',{class:'panel',id:'viewer-controls','aria-label':tr('조작 패널')},panelScroll);
+  function setPanel(open){
+    root.classList.toggle('panel-closed',!open);panel.inert=!open;
+    header.panelToggle.setAttribute('aria-expanded',String(open));
+  }
+  const notes=h('p',{class:'hint'},tr('플로어 좌석과 무대 연출은 공연마다 달라집니다. 단차와 눈높이는 추정값입니다.'));
+  const source=(url,label)=>h('a',{href:url,target:'_blank',rel:'noopener'},tr(label));
+  function info(title,content){
+    const dialog=h('dialog',{class:'quick-guide os-info','aria-label':tr(title)},h('h2',null,tr(title)),content,
+      h('button',{type:'button',class:'guide-start',onClick:()=>dialog.close()},tr('닫기')));
+    dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
+  }
+  const sources=()=>info('출처 · 안내',[notes,source('https://www.osaka-johall.com/floorguide/','공식 층별 안내'),
+    source('https://www.osaka-johall.com/seat/','공식 좌석표'),credits]);
+  const toast=h('div',{class:'toast',role:'status'});
+  let toastTimer;
+  async function share(){
+    saveWalk();
+    try{await navigator.clipboard.writeText(location.href);toast.textContent=tr('현재 화면의 링크를 복사했습니다');}
+    catch{toast.textContent=location.href;}
+    toast.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('on'),4200);
+  }
+  const header=viewerHeader('Osaka-jo Hall',{
+    mode:id=>changeMode(({explore:'exterior',levels:'floor'})[id]||id),panel:()=>setPanel(panel.inert),home:()=>changeMode('exterior'),
+    facts:()=>info('시설 개요',[h('p',null,'Osaka-jo Hall · ',tr('최대 {0}명',(16000).toLocaleString(language))),
+      h('p',null,tr('1층 아레나'),' / ',tr('2층 스탠드')),source('https://www.osaka-johall.com/floorguide/','공식 층별 안내')]),
+    about:sources,share,help:()=>help.showModal(),
+    full:()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.().catch(()=>{}),
+    language:lang=>{const url=new URL(location.href);url.searchParams.set('lang',lang);location.assign(url);}
+  });
+  const credit=h('button',{type:'button',class:'credit',onClick:sources},'© MLIT PLATEAU · Osaka');
+  root.append(header.topbar,panel,hud,seatHud,doorHud,credit,compass,joy,lift,toast);
+  document.body.append(help);mountSchedule(root,panelScroll,'osaka-jo-hall');
+  setPanel(!matchMedia('(max-width:760px)').matches);
   function overview() {
     // Fit the cutaway in the available viewport, including portrait phones.
     const outside=mode==='exterior'||mode==='section';
@@ -275,9 +358,19 @@ export function start() {
     if(grounds)grounds.userData.roofParts.forEach(o=>{o.visible=!(outside&&roofOpen);});
     bowl.visible=!outside||roofOpen;hall.shell.visible=seated||mobile||mode==='section'||mode==='floor';
     scene.fog=walk||outside?parkHaze:null;
-    stage.classList.toggle('os-walking',mobile);
-    stage.classList.toggle('os-flying',fly);sections.hidden=mode!=='section';floorPanel.hidden=mode!=='floor';
-    pad.hidden=!mobile;sit.hidden=true;routes.hidden=!(walk||outside);
+    root.classList.toggle('walking',mobile);
+    sections.hidden=mode!=='section';floorPanel.hidden=mode!=='floor';
+    sit.hidden=true;doorHud.hidden=true;hud.hidden=seated;seatHud.hidden=!seated;routes.hidden=!walk;flyPanel.hidden=!fly;
+    const exploring=outside||mode==='overview';
+    explorePanel.hidden=!exploring;seatPanel.hidden=!seated;layoutPanel.hidden=!(seated||mode==='overview');
+    const tab=exploring?'explore':mode==='floor'?'levels':mode;
+    root.dataset.mode=tab;
+    for(const button of header.tabs.children){
+      const on=button.dataset.mode===tab;button.classList.toggle('on',on);button.setAttribute('aria-pressed',on);
+    }
+    for(const button of cards)button.setAttribute('aria-pressed',button.dataset.view===mode);
+    for(const button of routes.querySelectorAll('[data-start]'))button.classList.toggle('on',button.dataset.start===place);
+
     const list=byBlock.get(seat.block);
     options(block,blocks,seat.block);options(row,[...list.keys()],seat.row);
     options(number,list.get(seat.row).map(s=>s.number),seat.number);
@@ -286,10 +379,9 @@ export function start() {
     sightline.hidden=!(seated && layout!=='C' && forward < -l.depth/2);
     capacity.textContent=tr('최대 {0}명',l.capacity.toLocaleString(language));
     plan.update(seat.block,layout);
-    stages.forEach(btn=>btn.setAttribute('aria-pressed',btn.dataset.layout===layout));
-    modeButtons.forEach(btn=>btn.setAttribute('aria-pressed',btn.dataset.mode===mode));
+    for(const btn of stages){const on=btn.dataset.layout===layout;btn.setAttribute('aria-pressed',on);btn.classList.toggle('on',on);}
     badge.textContent=seated?tr('{0} 블록 · {1}열 {2}번',seat.block,seat.row,seat.number):tr(outside?'외관':mode==='section'?'단면':'전체 보기');
-    hint.textContent=tr(fly?'WASD 이동 · E 상승 · Q 하강 · Shift 가속':walk?'WASD 또는 화살표로 이동 · 드래그로 시선 조절':'드래그로 회전 · 휠 또는 두 손가락으로 확대');
+    hint.textContent=tr(seated?'드래그로 시선을 조절하세요.':fly?'WASD 이동 · E 상승 · Q 하강 · Shift 가속':walk?'WASD 또는 화살표로 이동 · 드래그로 시선 조절':'드래그로 회전 · 휠 또는 두 손가락으로 확대');
     orbit.enabled=!seated&&!mobile;look.enabled=seated||mobile;
     camera.fov=seated||mobile?66:46;camera.updateProjectionMatrix();
     if(fly){walker.enter(place,flyPose,true);flyPose=walker.pose();}
@@ -297,7 +389,12 @@ export function start() {
       walker.enter(place,savedPose);savedPose=walker.pose();
     }else if(seated){
       camera.position.set(seat.x,seat.y+1.17,seat.z);
-      look.setDirection(new T.Vector3(l.x,2.25,l.z).sub(camera.position));
+      faceStage();
+      const distance=Math.hypot(seat.x-l.x,seat.z-l.z);
+      const fact=(label,value)=>h('div',null,h('dt',null,tr(label)),h('dd',null,value));
+      seatReadout.replaceChildren(h('div',{class:'hud-title'},tr('블록'),' ',seat.block),
+        h('div',{class:'hud-seatno'},h('b',null,tr('{0}열 {1}번',seat.row,seat.number)),h('small',null,tr(stageNames[layout]))),
+        h('dl',{class:'hud-facts'},fact('무대까지',fmt(distance)+' m'),fact('눈높이','+'+fmt(camera.position.y)+' m')));
     }else overview();
     appearance();inspection();
   }

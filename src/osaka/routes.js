@@ -10,6 +10,15 @@ export function entryPoint(distance,side=0) {
 export function entryCoords(x,z){
   return {d:x*entryAxis.x+(z+62)*entryAxis.z,s:-x*entryAxis.z+(z+62)*entryAxis.x};
 }
+// Terrace corners in metres along and across the north approach.
+export const terraceFoot=[[26,10.1],[68,10.1],[68,33],[44,31],[26,14]];
+export const terraceTop=[[29,12.8],[65.5,12.8],[65.5,30.5],[46,28.5],[29,14.8]];
+export function insideTerrace(d,s){
+  return terraceFoot.every(([a,b],i)=>{
+    const [c,e]=terraceFoot[(i+1)%terraceFoot.length];
+    return (c-a)*(s-b)-(e-b)*(d-a)>=0;
+  });
+}
 export const stair = {inner:51.2,outer:55.4,run:28,steps:62};
 export function stairPoint(side,d,r){
   return {x:side*(straight+r*Math.cos(d/53.3)),z:side*r*Math.sin(d/53.3)};
@@ -51,4 +60,15 @@ export function lowerFloor(x,z,y,r,layout){
 export function pillarPosition(n,r=56.6){
   // Pillar 01 is near A/N and numbering increases towards the east.
   return rim((n-1)*perimeter/46,r-radius);
+}
+
+// Footprints use the same pillar coordinate frame as the concourse fittings.
+const shopFootprints=[[8,0],[14,0],[14,upper]].map(([n,y])=>({p:pillarPosition(n,57.3),y,w:2.58,d:.72}));
+const lockerFootprints=[6,17].map(n=>({p:pillarPosition(n,58.35),y:0,w:2.37,d:.46}));
+const fittings=[...shopFootprints,...lockerFootprints];
+export function insideFitting(x,z,y){
+  return fittings.some(({p,y:base,w,d})=>{
+    const dx=x-p.x,dz=z-p.z;
+    return Math.abs(y-base)<.5 && Math.abs(dx*p.nz-dz*p.nx)<w && Math.abs(dx*p.nx+dz*p.nz)<d;
+  });
 }

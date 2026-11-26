@@ -43,7 +43,7 @@ body.directory-page { background:#111419; color:var(--paper); overflow:auto; col
 .viewer { --accent:var(--citron); --active:#d8fa6e1e; --bg:rgba(21,25,26,.95); --line:#edf2db25; --muted:#bcc2bf; --dim:#a6b0a8; --top-h:59px; }
 .viewer .topbar { background:#171b1df7; gap:10px; box-shadow:0 3px 16px #0003; }
 .venues-home { color:#f9faee; text-decoration:none; flex:none; font-size:20px; }
-.viewer .brand { border-left:1px solid var(--line); padding-left:12px; }
+.viewer .brand { min-inline-size:160px; border-left:1px solid var(--line); padding-left:12px; }
 .viewer .tabs { padding:3px; gap:1px; border:1px solid #ffffff18; border-radius:12px; background:#0e1215; }
 .viewer .tabs button { display:inline-flex; justify-content:center; align-items:center; gap:6px; padding:0 9px; }
 .viewer .tabs button.on { color:var(--ink); background:var(--citron); }

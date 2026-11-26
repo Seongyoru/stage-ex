@@ -37,6 +37,7 @@ export const messages = {
   "끝 무대": ["End stage","縦向き"],
   "중앙 무대": ["Center stage","センター"],
   "블록": ["Block","ブロック"],
+  "드래그로 시선을 조절하세요.": ["Drag to look around.","ドラッグして視点を動かせます。"],
   "좌석 번호": ["Seat no.","席番号"],
   "전체 보기": ["Overview","全体表示"],
   "드래그로 회전 · 휠 또는 두 손가락으로 확대": ["Drag to look around · Scroll or pinch to zoom","ドラッグで回転 · ホイール・ピンチで拡大"],

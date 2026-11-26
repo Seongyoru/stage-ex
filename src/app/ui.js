@@ -1,7 +1,7 @@
-import { language, languageSelect, tr } from './i18n.js';
+import { language, tr } from './i18n.js';
 import { openGuide } from './guide.js';
 import { buildUrl } from './urlstate.js';
-import { scheduleBanner } from './schedule.js';
+import { viewerHeader, mountSchedule, joystick, seatNavigation, segmented, switchRow } from './viewer-shell.js';
 // The Korean user interface: top bar with mode tabs, the control panel, the bottom
 // readout (HUD), dialogs, toast, compass and the touch joystick. Plain DOM, no framework.
 import { NORTH_XZ } from '../core/frame.js';
@@ -11,43 +11,7 @@ import { factsContent, aboutContent, helpContent } from './info.js';
 import { TIERS, TIER_INFO, rowsOf, seatNumbers, seatMetrics, nearestGate, seatKindKo, seatTitle, tierKo, isSpecial } from './seats.js';
 import { VIEWS, WALK_STARTS, FLIGHT_STARTS, LEVEL_INFO, SECTION_RANGE } from './views.js';
 
-const MODES = [
-  { id: 'explore', ko: tr("둘러보기") },
-  { id: 'seat', ko: tr("좌석 시야") },
-  { id: 'walk', ko: tr("걷기") },
-  { id: 'fly', ko: tr('날기') },
-  { id: 'section', ko: tr("단면") },
-  { id: 'levels', ko: tr("층별") },
-];
-
 const TIER_COLOR = { 1: '#8794a8', 3: '#5b8fd6', 5: '#4fb39a', 7: '#b48ad8' };
-
-function switchRow(label, checked, onChange, hint) {
-  const input = h('input', { type: 'checkbox', role: 'switch' });
-  input.checked = !!checked;
-  input.addEventListener('change', () => onChange(input.checked));
-  const row = h('label', { class: 'sw' }, h('span', { class: 'sw-text' }, label, hint ? h('small', null, hint) : null), input, h('i', { 'aria-hidden': 'true' }));
-  row.input = input;
-  return row;
-}
-
-function segmented(options, value, onChange, cls = '') {
-  const el = h('div', { class: `seg ${cls}`, role: 'group' });
-  const buttons = options.map((o) => {
-    const b = h('button', { type: 'button', title: o.title || null }, o.label);
-    b.addEventListener('click', () => onChange(o.value));
-    el.append(b);
-    return [o.value, b];
-  });
-  el.setValue = (v) => {
-    for (const [val, b] of buttons) {
-      b.classList.toggle('on', val === v);
-      b.setAttribute('aria-pressed', String(val === v));
-    }
-  };
-  el.setValue(value);
-  return el;
-}
 
 function stepper(label, onStep, onSet) {
   const input = h('input', { type: 'text', inputmode: 'numeric', autocomplete: 'off', 'aria-label': label });
@@ -90,41 +54,12 @@ export class UI {
     const narrow = matchMedia('(max-width: 760px)').matches;
 
     // --- top bar ------------------------------------------------------------------------
-    r.tabs = h(
-      'nav',
-      { class: 'tabs', 'aria-label': tr("모드") },
-      MODES.map((m) => {
-        const b = h('button', { type: 'button', dataset: { mode: m.id } }, icon(m.id, 16), h('span', null, m.ko));
-        b.addEventListener('click', () => app.setMode(m.id));
-        return b;
-      }),
-    );
-    const tool = (name, label, fn) => h('button', { type: 'button', class: 'tool', title: label, 'aria-label': label, onClick: fn }, icon(name));
-    r.panelToggle = h('button', {
-      type: 'button', class: 'tool menu-btn', title: tr("패널 열기 / 닫기"), 'aria-label': tr("패널 열기 / 닫기"),
-      'aria-controls': 'viewer-controls', 'aria-expanded': String(!narrow), onClick: () => this.togglePanel(),
-    }, icon('panel'));
-    r.topbar = h(
-      'header',
-      { class: 'topbar' },
-      r.panelToggle,
-      h('a', { class: 'venues-home', href: '?lang=' + language, title: tr('공연장 목록'), 'aria-label': tr('공연장 목록') }, 'Stage ', h('i', null, 'EX')),
-      h('button', { type: 'button', class: 'brand', onClick: () => app.goHome(), title: tr("전경으로") }, h('b', null, 'K-Arena Yokohama')),
-      r.tabs,
-      h(
-        'div',
-        { class: 'tools' },
-        tool('info', tr("시설 개요"), () => this.openDialog('facts')),
-        tool('book', tr("출처 · 안내"), () => this.openDialog('about')),
-        tool('share', tr("현재 화면 링크 복사"), () => app.share()),
-        tool('help', tr("조작법 · 단축키"), () => this.openDialog('help')),
-        tool('full', tr("전체 화면"), () => app.toggleFullscreen()),
-        languageSelect(code => {
-          const params = new URLSearchParams(buildUrl(app.s, app.rig.pose(), { q: app.s.quality, lang: code }));
-          location.search = params.toString();
-        }),
-      ),
-    );
+    Object.assign(r, viewerHeader('K-Arena Yokohama', {
+      mode: id => app.setMode(id), panel: () => this.togglePanel(), home: () => app.goHome(),
+      facts: () => this.openDialog('facts'), about: () => this.openDialog('about'), share: () => app.share(),
+      help: () => this.openDialog('help'), full: () => app.toggleFullscreen(),
+      language: lang => { location.search = buildUrl(app.s, app.rig.pose(), { q: app.s.quality, lang }); },
+    }));
 
     // --- panes --------------------------------------------------------------------------
     r.panes = {
@@ -152,21 +87,13 @@ export class UI {
     r.toast = h('div', { class: 'toast', role: 'status' });
     r.needle = h('div', { class: 'needle' }, h('b', null, 'N'));
     r.compass = h('button', { type: 'button', class: 'compass', title: tr("북쪽 방향 · 눌러서 전경으로"), onClick: () => app.goHome() }, r.needle);
-    r.joy = this.buildJoystick();
+    r.joy = joystick((x, y) => app.setJoystick(x, y));
     r.restore = h('button', { type: 'button', class: 'restore', title: tr("UI 표시 (U)"), onClick: () => app.set({ ui: true }) }, icon('eye'));
     r.credit = h('button', { type: 'button', class: 'credit', title: tr("출처 · 안내"), onClick: () => this.openDialog('about') });
     r.dialog = this.buildDialog();
 
     this.root.append(r.topbar, r.panel, r.hud, r.credit, r.compass, r.joy, this.buildLiftControls(), r.toast, r.restore, r.dialog);
-    const schedule = scheduleBanner(true);
-    const mobile = matchMedia('(max-width: 760px)');
-    const placeSchedule = () => {
-      schedule.open = false;
-      if (mobile.matches) r.panel.querySelector('.panel-scroll').prepend(schedule);
-      else this.root.append(schedule);
-    };
-    placeSchedule();
-    mobile.addEventListener('change', placeSchedule);
+    mountSchedule(this.root, r.panel.firstElementChild);
     this.setCredit(false);
     this.syncAll();
   }
@@ -473,42 +400,6 @@ export class UI {
   }
 
   // --- joystick (touch) -------------------------------------------------------------------
-  buildJoystick() {
-    const knob = h('i');
-    const el = h('div', { class: 'joystick', 'aria-hidden': 'true' }, knob);
-    let id = null;
-    const set = (e) => {
-      const rect = el.getBoundingClientRect();
-      const R = rect.width / 2;
-      let x = (e.clientX - rect.left - R) / R;
-      let y = (e.clientY - rect.top - R) / R;
-      const l = Math.hypot(x, y);
-      if (l > 1) {
-        x /= l;
-        y /= l;
-      }
-      knob.style.transform = `translate(${x * R * 0.55}px, ${y * R * 0.55}px)`;
-      this.app.setJoystick(x, -y);
-    };
-    const end = () => {
-      id = null;
-      knob.style.transform = '';
-      this.app.setJoystick(0, 0);
-    };
-    el.addEventListener('pointerdown', (e) => {
-      id = e.pointerId;
-      el.setPointerCapture(id);
-      set(e);
-      e.preventDefault();
-    });
-    el.addEventListener('pointermove', (e) => {
-      if (e.pointerId === id) set(e);
-    });
-    el.addEventListener('pointerup', end);
-    el.addEventListener('pointercancel', end);
-    return el;
-  }
-
   // --- dialog -----------------------------------------------------------------------------
   buildDialog() {
     const r = this.refs;
@@ -666,7 +557,6 @@ export class UI {
       const gate = nearestGate(seat);
       const clear = app.sightline(seat);
       const side = Math.abs(m.offAxis) < 1.5 ? tr("무대 정면") : tr("정면에서 {0} {1}°", m.offAxis > 0 ? tr("오른쪽") : tr("왼쪽"), fmt(Math.abs(m.offAxis), 0));
-      const nav = (name, label, fn, disabled) => h('button', { type: 'button', class: 'nav', title: label, 'aria-label': label, disabled: disabled || null, onClick: fn }, icon(name, 18));
       hud.classList.add('hud-seat');
       hud.append(
         h(
@@ -688,13 +578,7 @@ export class UI {
             clear === null ? null : h('div', { title: tr("모델의 난간 · 스탠드 · 갤러리 기준. 관객과 공연 기재는 포함하지 않습니다.") }, h('dt', null, tr("무대 앞 시야선")), h('dd', { class: clear ? '' : 'warn-text' }, clear ? tr("트임") : tr("구조물에 걸림"))),
           ),
         ),
-        h(
-          'div',
-          { class: 'hud-nav' },
-          nav('chevUp', tr("앞 열 (↑)"), () => app.stepRow(-1)),
-          h('div', null, nav('chevLeft', tr("왼쪽 좌석 (←)"), () => app.stepSeat(-1)), h('button', { type: 'button', class: 'nav centre', title: tr("무대 쪽 보기"), onClick: () => app.lookAtStage() }, tr("무대")), nav('chevRight', tr("오른쪽 좌석 (→)"), () => app.stepSeat(1))),
-          nav('chevDown', tr("뒷 열 (↓)"), () => app.stepRow(1)),
-        ),
+        seatNavigation(d=>app.stepRow(d),d=>app.stepSeat(d),()=>app.lookAtStage()),
       );
     } else if (s.mode === 'walk' && !s.fly && this.doorPrompt) {
       hud.classList.add('hud-door');

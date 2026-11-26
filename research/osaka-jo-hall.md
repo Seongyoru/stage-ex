@@ -14,4 +14,6 @@ The visitor model follows the operator's 1F arena and 2F stand diagrams, six pub
 
 Stand seat numbers follow the public seat lookup. The three stage presets follow the venue's A, B and C layouts. Movable seats, screens and concert lighting represent sample productions. The ceiling includes a central sound cluster and 18 distributed speakers. [Official seat plans](https://www.osaka-johall.com/seat/) · [Venue equipment](https://www.osaka-johall.com/organizer/arena/)
 
+The north terrace stonework, orange stand seats and locker finishes use the operator's visitor photos as visual references. The small gate directories are original Stage EX graphics. Door hardware, lighting fixtures and the speaker arrays on the sample stage are illustrative. [North entrance photographs](https://www.osaka-johall.com/access/osakajo-koen/) · [Public facility photos](https://www.osaka-johall.com/floorguide/)
+
 The schedule reads music performances listed for the arena in the operator’s monthly calendar and filters by the current date in Japan. The daily Pages build refreshes the snapshot. [Official event calendar](https://www.osaka-johall.com/event/)

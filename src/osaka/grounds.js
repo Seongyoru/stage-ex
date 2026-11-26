@@ -1,5 +1,5 @@
 import { radius, rowDepth, rowHeight, straight } from './seats.js';
-import { entryCoords, entryPoint, lowerFloor, stairDistance, stairPoint } from './routes.js';
+import { entryCoords, entryPoint, insideFitting, insideTerrace, lowerFloor, stairDistance, stairPoint } from './routes.js';
 import city from './city.json';
 
 // The passages line up with the north (G/H) and south (A/N) sides of the seating plan.
@@ -23,7 +23,7 @@ export const places = {
   south: { label: '남쪽 로비', x: 0, z: 54, yaw: 0 },
   stand: { label: '스탠드 통로', x: 0, z: -48, yaw: Math.PI },
   east: { label:'동쪽 연결 계단', ...stairPoint(1,-15,53.3), yaw:Math.PI },
-  arena: { label:'1층 아레나 입구', x:straight+50.3,z:0,y:0,yaw:Math.PI/2 },
+  arena: { label:'1층 아레나 입구', x:straight+51.55,z:0,y:0,yaw:Math.PI/2 },
 };
 
 export function radial(x,z) {
@@ -43,6 +43,7 @@ export function zone(x,z,y=deck) {
 export function floorAt(x,z,y=deck,layout='B') {
   if(!Number.isFinite(x)||!Number.isFinite(z)||Math.abs(x)>116||Math.abs(z)>119) return null;
   const ax=Math.abs(x), az=Math.abs(z), r=radial(x,z);
+  if(r>55.7 && r<facade && insideFitting(x,z,y))return null;
   if(r<facade && (y<deck-.65 || (r>51 && r<56))){
     const lower=lowerFloor(x,z,y,r,layout);
     if(lower!==undefined)return lower;
@@ -58,7 +59,7 @@ export function floorAt(x,z,y=deck,layout='B') {
   }
   if(z<0){
     const {d,s}=entryCoords(x,z);
-    if(d>14.75&&d<53.25&&s>9.78&&s<22.25)return null;
+    if(d>=26&&d<=68&&insideTerrace(d,s))return null;
     if(d>=-6&&d<=54+treads*tread&&Math.abs(s)<=stairHalf-.24){
       const steps=Math.min(treads,Math.max(0,Math.ceil((54+treads*tread-d)/tread-1e-8)));
       return ground+steps*(deck-ground)/treads;
