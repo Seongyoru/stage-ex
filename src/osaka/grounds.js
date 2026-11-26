@@ -16,6 +16,7 @@ export const stairHalf = 10;
 export const doorHalf = 4.2;
 export const fountain = { x: 102, z: -107, radius: 7.2 };
 export const trees = city.trees;
+const walkTrees=trees.filter(([x,z])=>Math.abs(x)<=118&&Math.abs(z)<=121);
 const approach=entryPoint(119,9.2);
 export const places = {
   plaza: { label: '분수 광장', ...approach, yaw:Math.atan2(approach.x,approach.z+facade) },
@@ -73,6 +74,6 @@ export function floorAt(x,z,y=deck,layout='B') {
   }
   if(Math.hypot(x-fountain.x,z-fountain.z)<fountain.radius+.28) return null;
   if(Math.hypot(ax-23,az-78)<.48) return null;
-  if(trees.some(([tx,tz])=>Math.hypot(x-tx,z-tz)<1.55)) return null;
+  if(walkTrees.some(([tx,tz])=>Math.hypot(x-tx,z-tz)<1.55)) return null;
   return ground;
 }

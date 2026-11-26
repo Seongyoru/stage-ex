@@ -8,12 +8,11 @@ import { loadProps } from '../app/assets.js';
 // Osaka City 2022 CityGML (MLIT PLATEAU). Local X follows the surveyed long wall.
 // The aerial mosaic is a rotated crop of the MLIT PLATEAU-Ortho 2024 tiles.
 export function precinct(kit, redraw){
-  const {root,box,strip,sign,stone,tile,bronze,concrete,wood,porcelain,lamp,foliage,instance,crown,cylinder}=kit;
+  const {root,box,strip,sign,stone,tile,lobbyFloor,bronze,concrete,wood,porcelain,lamp,foliage,instance,crown,cylinder}=kit;
   const loader=new T.TextureLoader();
   function texture(path){
     const t=loader.load(path,redraw);t.colorSpace=T.SRGBColorSpace;t.anisotropy=4;return t;
   }
-  const skyMap=texture('./venues/osaka-park.webp');
   const groundShape=new T.Shape([[-480,-480],[480,-480],[480,480],[-480,480]].map(([x,z])=>new T.Vector2(x,-z)));
   const hole=new T.Path();
   for(let i=0;i<=160;i++){
@@ -24,8 +23,39 @@ export function precinct(kit, redraw){
   const land=new T.ShapeGeometry(groundShape),pos=land.attributes.position,uv=land.attributes.uv;
   for(let i=0;i<pos.count;i++)uv.setXY(i,.5+pos.getX(i)/960,.5+pos.getY(i)/960);
   land.rotateX(-Math.PI/2);
-  const landscape=new T.Mesh(land,new T.MeshStandardMaterial({map:skyMap,roughness:1,side:T.DoubleSide}));
+  const surface=new T.MeshStandardMaterial({map:texture('./venues/osaka-landcover.webp'),roughness:1});
+  const grain=loader.load('./venues/osaka-ground-detail.webp',redraw);
+  grain.wrapS=grain.wrapT=T.RepeatWrapping;grain.anisotropy=4;
+  // Use the survey colour for the distant view. In walking range, layer the
+  // grain of grass, pavers or asphalt at a physical scale of 2.4 m per repeat.
+  surface.onBeforeCompile=shader=>{
+    shader.uniforms.groundDetail={value:grain};
+    shader.fragmentShader='uniform sampler2D groundDetail;\n'+shader.fragmentShader.replace(
+      '#include <map_fragment>',`#include <map_fragment>
+      vec3 grain = texture2D(groundDetail, vMapUv * 400.0).rgb - 0.5;
+      vec3 base = diffuseColor.rgb;
+      float vegetation = smoothstep(0.012, 0.050, base.g - base.r);
+      float water = smoothstep(0.02, 0.10, base.b - base.r);
+      float hardscape = mix(grain.b, grain.g, smoothstep(0.19, 0.33, base.r));
+      diffuseColor.rgb *= 1.0 + mix(mix(hardscape, grain.r, vegetation), grain.b * 0.16, water);
+    `);
+  };
+  const landscape=new T.Mesh(land,surface);
   landscape.position.y=ground-.045;root.add(landscape);
+  let aerialMaterial, aerialReady=false, aerialSelected=false;
+  root.userData.setAerial=enabled=>{
+    aerialSelected=enabled;
+    if(enabled&&!aerialMaterial){
+      const image=loader.load('./venues/osaka-park.webp',()=>{
+        aerialReady=true;
+        if(aerialSelected)landscape.material=aerialMaterial;
+        redraw();
+      });
+      image.colorSpace=T.SRGBColorSpace;image.anisotropy=4;
+      aerialMaterial=new T.MeshStandardMaterial({map:image,roughness:1});
+    }
+    landscape.material=enabled&&aerialReady?aerialMaterial:surface;
+  };
   const facadeMap=texture('./textures/facade_office_glass_albedo.webp');
   facadeMap.wrapS=facadeMap.wrapT=T.RepeatWrapping;
   const sides=new T.MeshStandardMaterial({map:facadeMap,color:0xd4dde0,side:T.DoubleSide});
@@ -158,10 +188,9 @@ export function precinct(kit, redraw){
     return new T.MeshStandardMaterial({map,color,roughness:.84,side:T.DoubleSide});
   }
   const plaster=tiledFinish('concrete_painted_cream',0xf5f2ed);
-  const terrazzo=tiledFinish('concrete_floor_sealed',0xb9b7ac,1.5);
   const gateGap=p=>Boolean(gates.find(g=>(p.x-g.cx)*g.nx+p.z*g.nz>20&&Math.abs((p.x-g.cx)*g.nz-p.z*g.nx)<2.7));
   const stairVoid=p=>Math.abs(Math.atan2(p.z,Math.abs(p.x)-17.6)*53.3)<14;
-  strip(terrazzo,23.8,.014,facade,.014,{planar:true});
+  strip(lobbyFloor,radius-.52,.01,facade,.01,{planar:true});
   strip(plaster,47.8,3.65,51.2,3.65,{planar:true});
   strip(plaster,51.2,3.65,55.4,3.65,{planar:true,omit:stairVoid});
   strip(plaster,55.4,3.65,facade,3.65,{planar:true});

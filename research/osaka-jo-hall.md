@@ -6,7 +6,9 @@ The local origin is at 34.68965545° N, 135.53009923° E. Positive X follows the
 
 The footprint and measured height of 20.9 m are from building `bldg_76be51df-af78-4437-b4f4-aac6dff0dd62` in the 2022 Osaka City PLATEAU CityGML dataset. The model uses the surveyed perimeter and a reconstructed intermediate roof profile. The surrounding buildings use simplified footprint rings and published heights in the same frame. Their wall finishes are illustrative. [MLIT Project PLATEAU, Osaka City 2022](https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2022)
 
-The ground image and roof finish are local, rotated crops of MLIT PLATEAU-Ortho 2024. The ground covers 960 m across. The roof crop covers 140 m along the long axis. The fountain plaza, diagonal north approach and riverside terraces were positioned by comparing the aerial view with the operator's arrival photographs. [PLATEAU-Ortho tiles](https://tile.plateauview.mlit.go.jp/tiles/plateau-ortho-2024/17/114883/52053.png) · [Official north entrance approach](https://www.osaka-johall.com/access/osakajo-koen/)
+Default ground colours follow the 2022 PLATEAU land-use and road polygons. The two sports fields and forecourt are traced from the local orthophoto. The viewer repeats paving, grass and asphalt grain in metres and uses approximate planting positions sampled within park areas. The aerial ground switch replaces only the outside surface and is stored in shared links as `aerial=1`.
+
+The optional ground image and roof finish are local, rotated crops of MLIT PLATEAU-Ortho 2024. The ground covers 960 m across. The roof crop covers 140 m along the long axis. The fountain plaza, diagonal north approach and riverside terraces were positioned by comparing the aerial view with the operator's arrival photographs. [PLATEAU-Ortho tiles](https://tile.plateauview.mlit.go.jp/tiles/plateau-ortho-2024/17/114883/52053.png) · [Official north entrance approach](https://www.osaka-johall.com/access/osakajo-koen/)
 
 ## Public interior
 

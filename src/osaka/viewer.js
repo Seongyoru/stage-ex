@@ -61,6 +61,7 @@ export function start() {
   let flyPose=mode==='fly'?savedPose:null;
   if(mode==='fly')savedPose=null;
   let night=params.get('night')==='1', show=params.get('show')==='1', low=params.get('q')==='low';
+  let aerial=params.get('aerial')==='1';
   let labels=params.get('labels')!=='0',roofOpen=params.get('roof')==='0';
   let floor=params.get('level')==='1'?1:2, axis=params.get('axis')==='x'?'x':'z';
   let cut=Math.max(-65,Math.min(65,Number(params.get('cut'))||0));
@@ -231,10 +232,12 @@ export function start() {
   const showSwitch=switchRow(tr('공연 조명'),show,value=>{show=value;appearance();});
   const labelSwitch=switchRow(tr('라벨'),labels,value=>{labels=value;appearance();});
   const roofSwitch=switchRow(tr('지붕 열기'),roofOpen,value=>{roofOpen=value;update();});
+  const aerialSwitch=switchRow(tr('항공사진 지면'),aerial,value=>{aerial=value;appearance();},
+    tr('공연장 주변 공원의 지면에 항공사진을 표시합니다.'));
   const sceneTools=h('div',{class:'scene'},
     h('div',{class:'time-row'},h('span',null,tr('시간대')),time),
     h('details',{class:'group'},h('summary',null,icon('settings',16),tr('장면 설정')),
-      showSwitch,roofSwitch,labelSwitch,h('div',{class:'inline'},h('span',null,tr('품질')),quality)));
+      showSwitch,roofSwitch,labelSwitch,aerialSwitch,h('div',{class:'inline'},h('span',null,tr('품질')),quality)));
   const help=h('dialog',{class:'quick-guide','aria-label':tr('조작 안내')},h('h2',null,tr('조작 안내')),
     h('ul',null,[
       ['↻','전체 보기','드래그로 회전 · 휠 또는 두 손가락으로 확대'],
@@ -279,6 +282,9 @@ export function start() {
     renderer.setPixelRatio(low?1:Math.min(devicePixelRatio,1.75));
     hall.setShow(show);time.setValue(night);quality.setValue(low);
     showSwitch.input.checked=show;labelSwitch.input.checked=labels;
+    grounds?.userData.setAerial(aerial);
+    aerialSwitch.input.checked=aerial;
+    credit.textContent=aerial?'© MLIT PLATEAU · PLATEAU-Ortho 2024':'© MLIT PLATEAU · Osaka';
     roofSwitch.hidden=mode!=='exterior';roofSwitch.input.checked=roofOpen;
     writeUrl();redraw();
   }
@@ -406,7 +412,7 @@ export function start() {
       url.searchParams.set('start',place);
       url.searchParams.set('pose',[pose.x,pose.z,pose.yaw,pose.pitch,pose.y].map(v=>Number(v.toFixed(4))).join(','));
     }else{url.searchParams.delete('start');url.searchParams.delete('pose');}
-    for(const [k,v] of Object.entries({night:night?'1':null,show:show?'1':null,q:low?'low':null,labels:labels?null:'0',roof:roofOpen?'0':null,level:mode==='floor'?floor:null,axis:mode==='section'?axis:null,cut:mode==='section'?cut:null})){
+    for(const [k,v] of Object.entries({aerial:aerial?'1':null,night:night?'1':null,show:show?'1':null,q:low?'low':null,labels:labels?null:'0',roof:roofOpen?'0':null,level:mode==='floor'?floor:null,axis:mode==='section'?axis:null,cut:mode==='section'?cut:null})){
       if(v===null)url.searchParams.delete(k);else url.searchParams.set(k,v);
     }
     if(url.href!==location.href)history.replaceState(null,'',url);

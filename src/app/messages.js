@@ -147,6 +147,7 @@ export const messages = {
   "지붕 열기": ["Open roof","屋根を開く"],
   "라벨": ["Labels","ラベル"],
   "항공사진 지면": ["Aerial imagery","航空写真"],
+  "공연장 주변 공원의 지면에 항공사진을 표시합니다.": ["Show aerial imagery on the park grounds around the hall.","ホール周辺の公園の地面に航空写真を表示します。"],
   "PLATEAU-Ortho 타일을 MLIT 서버에서 불러옵니다": ["Loads PLATEAU-Ortho imagery from MLIT","国土交通省のPLATEAU-Orthoタイルを読み込みます"],
   "높음": ["High","高"],
   "낮음": ["Low","低"],

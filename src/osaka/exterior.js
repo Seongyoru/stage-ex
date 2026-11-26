@@ -4,33 +4,25 @@ import * as T from 'three';
 import { perimeter, radius, rim } from './seats.js';
 import { deck, ground, innerWall, facade, stairHalf, stairTop, tread, treads, trees, fountain } from './grounds.js';
 
-function masonry(paving) {
+function masonry() {
   const canvas=document.createElement('canvas');canvas.width=canvas.height=512;
   const ctx=canvas.getContext('2d');
-  ctx.fillStyle=paving?'#95928c':'#72726c';ctx.fillRect(0,0,512,512);
+  ctx.fillStyle='#72726c';ctx.fillRect(0,0,512,512);
   let seed=53;
   const random=()=>((seed=(seed*16807)%2147483647)/2147483647);
-  const height=paving?64:85.3333;
-  for(let row=0;row<Math.round(512/height);row++){
-    const width=paving?128:102.4;
-    for(let col=-1;col<Math.ceil(512/width)+1;col++){
-      const x=(col+(row%2)/2)*width, y=row*height;
-      const tone=Math.round((paving?177:159)+random()*(paving?14:36));
+  const height=512/6,width=512/5;
+  for(let row=0;row<6;row++){
+    for(let col=-1;col<=5;col++){
+      const x=(col+(row%2)/2)*width,y=row*height;
+      const tone=Math.round(159+random()*36),cut=7+random()*13;
       ctx.fillStyle='rgb('+[tone+4,tone+3,tone-2]+')';
-      ctx.beginPath();
-      if(!paving){
-        const cut=7+random()*13;
-        ctx.moveTo(x+cut,y+3);ctx.lineTo(x+width-cut*.7,y+2);
-        ctx.lineTo(x+width-2,y+cut);ctx.lineTo(x+width-4,y+height-cut*.55);
-        ctx.lineTo(x+width-cut,y+height-2);ctx.lineTo(x+cut*.7,y+height-4);
-        ctx.lineTo(x+2,y+height-cut);ctx.lineTo(x+3,y+cut);ctx.closePath();ctx.fill();
-        const wash=ctx.createLinearGradient(x,y,x+width*.45,y+height);
-        wash.addColorStop(0,'rgba(246,242,228,.29)');wash.addColorStop(.5,'rgba(184,177,164,.03)');wash.addColorStop(1,'rgba(51,60,57,.25)');
-        ctx.fillStyle=wash;ctx.fill();continue;
-      }
-      ctx.moveTo(x+2,y+3);ctx.lineTo(x+width-4,y+2);
-      ctx.lineTo(x+width-2,y+height-6);ctx.lineTo(x+width-7,y+height-2);
-      ctx.lineTo(x+3,y+height-2);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(x+cut,y+3);ctx.lineTo(x+width-cut*.7,y+2);
+      ctx.lineTo(x+width-2,y+cut);ctx.lineTo(x+width-4,y+height-cut*.55);
+      ctx.lineTo(x+width-cut,y+height-2);ctx.lineTo(x+cut*.7,y+height-4);
+      ctx.lineTo(x+2,y+height-cut);ctx.lineTo(x+3,y+cut);ctx.closePath();ctx.fill();
+      const wash=ctx.createLinearGradient(x,y,x+width*.45,y+height);
+      wash.addColorStop(0,'rgba(246,242,228,.29)');wash.addColorStop(.5,'rgba(184,177,164,.03)');wash.addColorStop(1,'rgba(51,60,57,.25)');
+      ctx.fillStyle=wash;ctx.fill();
     }
   }
   for(let i=0;i<24000;i++){
@@ -46,9 +38,22 @@ export function buildExterior(redraw) {
   const root=new T.Group();
   const solid=color=>new T.MeshStandardMaterial({color,roughness:.82});
   const glow=color=>new T.MeshBasicMaterial({color});
-  const stoneMap=masonry(false);
+  const stoneMap=masonry();
   const stone=new T.MeshStandardMaterial({map:stoneMap,bumpMap:stoneMap,bumpScale:.23});
-  const tile=new T.MeshStandardMaterial({map:masonry(true)});
+  const loader=new T.TextureLoader();
+  function floorFinish(name,repeat,roughness,relief){
+    const read=(part)=>{
+      const t=loader.load('./textures/'+name+'_'+part+'.webp',redraw);
+      t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.setScalar(repeat);t.anisotropy=4;
+      if(part==='albedo')t.colorSpace=T.SRGBColorSpace;
+      return t;
+    };
+    return new T.MeshStandardMaterial({map:read('albedo'),normalMap:read('normal'),
+      normalScale:new T.Vector2(relief,relief),roughness,roughnessMap:read('roughness'),side:T.DoubleSide});
+  }
+  // Planar UVs span four metres. Match the 2.4 m paving set used at K-Arena.
+  const tile=floorFinish('pavers_warmgrey',4/2.4,.94,.42);
+  const lobbyFloor=floorFinish('concrete_floor_sealed',1,.83,.16);
   const concrete=solid(0xb1aaa0), bronze=solid(0x464f49), glass=solid(0x496b70);
   const wood=solid(0x946e50), foliage=[solid(0x587741),solid(0x789056),solid(0x466c4c)];
   const porcelain=solid(0xe3ddcc), lamp=glow(0xffebc8);
@@ -90,12 +95,11 @@ export function buildExterior(redraw) {
     const mesh=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map}));
     mesh.position.set(x,y,z);mesh.rotation.y=side>0?0:Math.PI;root.add(mesh);return mesh;
   }
-  const shade=solid(0x65785a);
-  precinct({root,box,strip,sign,stone,tile,bronze,concrete,wood,porcelain,lamp,foliage,instance,crown,cylinder},redraw);
+  precinct({root,box,strip,sign,stone,tile,lobbyFloor,bronze,concrete,wood,porcelain,lamp,foliage,instance,crown,cylinder},redraw);
   strip(stone,facade+1.25,ground-.08,facade,deck+.04);
-  strip(tile,innerWall,deck,stair.inner,deck,{planar:true});
-  strip(tile,stair.inner,deck,stair.outer,deck,{planar:true,omit:p=>Math.abs(stairDistance(p.x,p.z))<14});
-  strip(tile,stair.outer,deck,facade,deck,{planar:true});
+  strip(lobbyFloor,innerWall,deck,stair.inner,deck,{planar:true});
+  strip(lobbyFloor,stair.inner,deck,stair.outer,deck,{planar:true,omit:p=>Math.abs(stairDistance(p.x,p.z))<14});
+  strip(lobbyFloor,stair.outer,deck,facade,deck,{planar:true});
   glass.roughness=.28;glass.metalness=.23;
   strip(glass,facade,deck,facade,deck+3.7,{gap:4.65});
   for(const height of [.24,2.70])strip(bronze,facade+.035,deck+height,facade+.035,deck+height+.07,{gap:4.65});
@@ -158,7 +162,7 @@ export function buildExterior(redraw) {
   // A representative fountain, park planting and plaza lamps frame the approach.
   const paving=new T.CircleGeometry(17,64);paving.rotateX(-Math.PI/2);
   const uv=paving.attributes.uv,p=paving.attributes.position;
-  for(let i=0;i<uv.count;i++)uv.setXY(i,p.getX(i)/4,p.getZ(i)/4);
+  for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)+fountain.x)/4,(p.getZ(i)+fountain.z)/4);
   const roundel=new T.Mesh(paving,tile);roundel.position.set(fountain.x,ground+.052,fountain.z);root.add(roundel);
   instance(cylinder,concrete,fountain.x,ground+.23,fountain.z,fountain.radius,.46,fountain.radius);
   instance(cylinder,solid(0x75a9a8),fountain.x,ground+.47,fountain.z,fountain.radius-.32,.03,fountain.radius-.32);
@@ -174,14 +178,16 @@ export function buildExterior(redraw) {
   }
   const water=new T.BufferGeometry();water.setAttribute('position',new T.Float32BufferAttribute(waterLines,3));
   root.add(new T.LineSegments(water,new T.LineBasicMaterial({color:0xdaf0ef,transparent:true,opacity:.74})));
+  // Park planting is grouped into shared meshes. Vary the crowns in size
+  // and orientation so the riverbanks read as planted ground from above.
+  const trunk=new T.CylinderGeometry(.7,1,1,7);
   trees.forEach(([x,z],i)=>{
-    instance(cylinder,shade,x,ground+.045,z,2.25,.018,1.8,i);
-    instance(cylinder,concrete,x,ground+.18,z,1.4,.36,1.4);
-    instance(cylinder,wood,x,ground+2.2,z,.23,4.4,.23);
-    for(let j=0;j<6;j++){
-      const a=i*2.399+j*2.21,spread=1.15+.48*Math.sin(i+j),h=4.55+.34*j+.43*Math.cos(i);
-      instance(cylinder,wood,x+Math.sin(a)*.55,ground+h-1.14,z+Math.cos(a)*.55,.11,2.1,.11,a,.52);
-      instance(crown,foliage[(i+j)%3],x+Math.sin(a)*spread,ground+h,z+Math.cos(a)*spread,1.75,1.3+.12*j,1.61,a);
+    const a=i*2.39996,size=.8+.30*(1+Math.sin(i*6.2)),h=4.5*size;
+    instance(trunk,wood,x,ground+h/2,z,.24*size,h,.24*size,a);
+    for(let j=0;j<3;j++){
+      const angle=a+j*2.12,spread=1.35*size;
+      instance(crown,foliage[(i+j)%3],x+Math.sin(angle)*spread,ground+h+j*.65*size,z+Math.cos(angle)*spread,
+        2.45*size,(2.1+j*.25)*size,2.25*size,angle);
     }
   });
   for(const x of [-23,23])for(const z of [-78,78]){
