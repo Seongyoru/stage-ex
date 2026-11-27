@@ -31,7 +31,6 @@ export const messages = {
   "앞으로": ["Move forward","前へ"], "뒤로": ["Move backward","後ろへ"],
   "왼쪽으로": ["Move left","左へ"], "오른쪽으로": ["Move right","右へ"],
   "이 좌석은 선택한 무대 뒤쪽입니다. 예매 전 공연별 좌석표를 확인하세요.": ["This seat is behind the selected stage. Check the event seating chart before booking.","この席は選択したステージの後方です。予約前に公演別の座席表をご確認ください。"],
-  "일본 · 오사카": ["Osaka, Japan","日本 · 大阪"],
   "최대 {0}명": ["Up to {0} people","最大{0}人"],
   "가로 무대": ["Side stage","横向き"],
   "끝 무대": ["End stage","縦向き"],

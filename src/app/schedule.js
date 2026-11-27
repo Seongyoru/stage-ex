@@ -1,5 +1,4 @@
-import kArenaSnapshot from '../data/k-arena-schedule.json';
-import osakaSnapshot from '../data/osaka-schedule.json';
+import snapshot from '../data/k-arena-schedule.json';
 import { h, icon } from './dom.js';
 import { language, tr } from './i18n.js';
 
@@ -8,9 +7,7 @@ const weekday = new Intl.DateTimeFormat(language, { timeZone: 'Asia/Tokyo', week
 const japanDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' });
 const heading = () => tr('공연 일정');
 
-export function scheduleBanner(compact = false, venue = 'k-arena-yokohama') {
-  const osaka = venue === 'osaka-jo-hall';
-  const snapshot = osaka ? osakaSnapshot : kArenaSnapshot;
+export function scheduleBanner(compact = false) {
   const list = h('div', { class: 'schedule-list', tabindex: '0', role: 'region', 'aria-label': heading() });
   const render = () => {
     const today = japanDate.format(new Date());
@@ -45,7 +42,7 @@ export function scheduleBanner(compact = false, venue = 'k-arena-yokohama') {
   const body = h('div', { class: 'schedule-body' },
     h('p', { class: 'schedule-zone' }, tr('일본 현지 시간')),
     list, h('footer', null, h('span', null, tr('{0} 확인', snapshot.checkedOn)),
-      h('a', { href: osaka ? 'https://www.osaka-johall.com/event/' : 'https://k-arena.com/schedule/', target: '_blank', rel: 'noopener noreferrer' },
+      h('a', { href: 'https://k-arena.com/schedule/', target: '_blank', rel: 'noopener noreferrer' },
         tr('공식 일정'), icon('share', 13))));
   const title = [icon('calendar', 19), h('span', null, heading())];
   if (compact) return h('details', { class: 'schedule-card schedule-drawer', onKeydown: e => e.stopPropagation() },

@@ -48,8 +48,8 @@ export function viewerHeader(name, actions) {
   return { topbar, tabs, panelToggle };
 }
 
-export function mountSchedule(root, panelScroll, venue) {
-  const schedule = scheduleBanner(true, venue);
+export function mountSchedule(root, panelScroll) {
+  const schedule = scheduleBanner(true);
   const mobile = matchMedia('(max-width: 760px)');
   const placeSchedule = () => {
     schedule.open = false;

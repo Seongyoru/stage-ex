@@ -26,9 +26,6 @@ jobs:
       - run: npm ci
       - name: Refresh K-Arena performance dates
         run: python3 tools/update_schedule.py
-      - name: Refresh Osaka-jo Hall performance dates
-        continue-on-error: true
-        run: python3 tools/update_osaka_schedule.py
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5
         with:

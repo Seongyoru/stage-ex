@@ -15,8 +15,10 @@ export function directory() {
   const list = h('main', { class: 'venue-list' }, h('header', { class: 'directory-title' },
     h('h1', null, tr('공연장 둘러보기')),
     h('p', { class: 'directory-intro' }, tr('좌석에서 보이는 무대와 공연장 안팎을 3D로 둘러보세요.'))));
-  list.append(h('nav', { class: 'venue-jumps', 'aria-label': tr('공연장 선택') },
-    venues.map(v => h('a', { href: '#' + v.id }, v.title))));
+  if (venues.length > 1) {
+    list.append(h('nav', { class: 'venue-jumps', 'aria-label': tr('공연장 선택') },
+      venues.map(v => h('a', { href: '#' + v.id }, v.title))));
+  }
   for (const venue of venues) {
     const url = (extra = {}) => '?' + new URLSearchParams({ venue: venue.id, lang: language, ...extra });
     const link = h('a', { class: 'venue-feature', href: url(), 'aria-label': venue.title + ' · ' + tr('공연장 입장') },
@@ -30,7 +32,7 @@ export function directory() {
       h('div', { class: 'scene-cards' }, venue.shortcuts.map(({ label, params, image }) =>
         h('a', { href: url(params) }, h('img', { src: image, alt: '', loading: 'lazy' }),
           h('span', null, tr(label)), icon('chevRight', 17)))));
-    const feature = h('div', { class: 'venue-layout' }, link, scheduleBanner(false, venue.id));
+    const feature = h('div', { class: 'venue-layout' }, link, scheduleBanner());
     list.append(h('article', { id: venue.id }, feature, shortcuts));
   }
   const root = h('div', { class: 'directory' }, header, list);

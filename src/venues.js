@@ -13,18 +13,4 @@ export const kArena = {
   ],
 };
 
-export const osakaHall = {
-  id: 'osaka-jo-hall',
-  title: 'Osaka-jo Hall',
-  city: '일본 · 오사카',
-  capacity: 16000,
-  image: './venues/osaka-jo-hall.webp',
-  load: () => import('./osaka/viewer.js').then(viewer => viewer.start()),
-  shortcuts: [
-    { label: '외관', image: './venues/os-facade.webp', params: { view: 'exterior' } },
-    { label: '분수 광장에서 걷기', image: './venues/os-plaza.webp', params: { view: 'walk', start: 'plaza' } },
-    { label: '좌석 시야', image: './venues/osaka-jo-hall.webp', params: { view: 'seat', block: 'B', row: 18, seat: 9, show: 1 } },
-  ],
-};
-
-export const venues = [kArena, osakaHall];
+export const venues = [kArena];
